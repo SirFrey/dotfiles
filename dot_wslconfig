@@ -1,0 +1,8 @@
+[wsl2]
+networkingMode=Mirrored
+swap=83961577472
+memory=10519314432
+
+[automount]
+# disable auto-mounting all drives if you don't need them:
+# enabled = false
