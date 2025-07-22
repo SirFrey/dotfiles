@@ -1,0 +1,149 @@
+typeset -U path
+path=(
+    # Homebrew (run `brew shellenv` once to ensure this is the correct path)
+    /home/linuxbrew/.linuxbrew/bin
+
+    # Custom user paths
+    "$HOME/.local/bin"
+    "$HOME/.local/scripts/"
+    /opt/nvim-linux-x86_64/bin # Neovim
+
+    # fnm (Node Version Manager)
+    "$HOME/.local/share/fnm"
+
+    # System paths
+    /usr/local/bin
+    /usr/bin
+    /bin
+)
+
+# Bun
+export BUN_INSTALL="$HOME/.bun"
+path=("$BUN_INSTALL/bin" $path)
+
+# pnpm
+export PNPM_HOME="$HOME/.local/share/pnpm"
+path=("$PNPM_HOME" $path)
+
+# Java
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+
+# Preferred editor
+export EDITOR='nvim'
+export VISUAL='nvim'
+
+# ------------------------------------------------------------------------------
+# SHELL OPTIONS & HISTORY
+# ------------------------------------------------------------------------------
+setopt IGNORE_EOF
+# History
+HISTSIZE=5000
+HISTFILE=~/.zsh_history
+SAVEHIST=$HISTSIZE
+HISTDUP=erase
+setopt appendhistory
+setopt sharehistory
+setopt hist_ignore_space
+setopt hist_ignore_all_dups
+setopt hist_save_no_dups
+setopt hist_ignore_dups
+setopt hist_find_no_dups
+
+HISTFILE=~/.zsh_history
+HISTSIZE=5000
+SAVEHIST=$HISTSIZE
+
+# ------------------------------------------------------------------------------
+# ALIASES & BINDINGS
+# ------------------------------------------------------------------------------
+alias v='nvim'
+alias vim='nvim'
+alias ls='ls --color'
+alias fd='fdfind'
+alias pn='pnpm'
+alias c='clear'
+
+bindkey -s ^f "tmux-sessionizer\n"
+
+# ------------------------------------------------------------------------------
+# ZINIT PLUGIN MANAGER
+# ------------------------------------------------------------------------------
+### Added by Zinit's installer
+if [[ ! -f $HOME/.local/share/zinit/zinit.git/zinit.zsh ]]; then
+    print -P "%F{33} %F{220}Installing %F{33}ZDHARMA-CONTINUUM%F{220} Initiative Plugin Manager (%F{33}zdharma-continuum/zinit%F{220})…%f"
+    command mkdir -p "$HOME/.local/share/zinit" && command chmod g-rwX "$HOME/.local/share/zinit"
+    command git clone https://github.com/zdharma-continuum/zinit "$HOME/.local/share/zinit/zinit.git" && \
+        print -P "%F{33} %F{34}Installation successful.%f%b" || \
+        print -P "%F{160} The clone has failed.%f%b"
+fi
+
+source "$HOME/.local/share/zinit/zinit.git/zinit.zsh"
+autoload -Uz _zinit
+(( ${+_comps} )) && _comps[zinit]=_zinit
+
+# Load annexes for additional features like completion management.
+zinit light-mode for \
+    zdharma-continuum/zinit-annex-as-monitor \
+    zdharma-continuum/zinit-annex-bin-gem-node \
+    zdharma-continuum/zinit-annex-patch-dl \
+    zdharma-continuum/zinit-annex-rust
+
+
+# ------------------------------------------------------------------------------
+# PLUGINS (Loaded with Zinit)
+# ------------------------------------------------------------------------------
+
+### Foundational Plugins (Syntax Highlighting, Autosuggestions, Completions)
+# `wait"0"` loads the plugin AFTER the prompt is drawn. This is the key to a fast start!
+zinit ice wait"0" lucid
+zinit light zdharma-continuum/fast-syntax-highlighting
+
+zinit light zsh-users/zsh-autosuggestions
+
+zinit ice wait"0" lucid
+zinit light zsh-users/zsh-completions
+
+zinit ice wait"0" lucid
+zinit light Aloxaf/fzf-tab
+
+### FZF
+# Installs fzf from GitHub Releases and sources its keybindings/completions.
+zinit ice from"gh-r" as"program" pick"*linux_amd64.tar.gz"
+zinit light junegunn/fzf
+
+### Oh My Zsh Snippets
+# Load only the necessary parts of OMZ without the slow startup.
+zinit snippet OMZL::git.zsh
+zinit snippet OMZP::git
+zinit snippet OMZP::sudo
+zinit snippet OMZP::asdf
+zinit snippet OMZP::archlinux
+zinit snippet OMZP::aws
+zinit snippet OMZP::kubectl
+zinit snippet OMZP::kubectx
+zinit snippet OMZP::command-not-found
+
+
+# Completion styling
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*' menu no
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
+zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
+
+# ------------------------------------------------------------------------------
+# FRAMEWORK INITIALIZATIONS
+# These must come after PATH setup and plugin loading.
+# ------------------------------------------------------------------------------
+
+# fnm (Node Version Manager)
+eval "$(fnm env --use-on-cd)"
+
+# Homebrew
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+# Bun completions
+[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
+
+# starship prompt
+eval "$(starship init zsh)"
