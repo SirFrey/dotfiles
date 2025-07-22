@@ -1,0 +1,52 @@
+{
+  "$schema": "https://raw.githubusercontent.com/LGUG2Z/komorebi/v0.1.37/schema.json",
+  "app_specific_configuration_path": "C:/Users/$Env:USERPROFILE/applications.json",
+  "bar_configurations": [
+    "C:/Users/$Env:USERPROFILE/komorebi.bar.monitor1.json",
+    "C:/Users/$Env:USERPROFILE/komorebi.bar.monitor2.json"
+    ],
+  "window_hiding_behaviour": "Cloak",
+  "cross_monitor_move_behaviour": "Insert",
+  "default_workspace_padding": 0,
+  "default_container_padding": -1,
+  "border": false,
+  "border_width": 8,
+  "border_offset": -1,
+  "theme": {
+    "palette": "Base16",
+    "name": "Ashes",
+    "unfocused_border": "Base03",
+    "bar_accent": "Base0D"
+  },
+  "monitors": [
+    {
+      "floating_layer_behaviour": "Float",
+      "workspaces": [
+        {
+          "name": "1"
+        },
+        {
+          "name": "2"
+        },
+        {
+          "name": "3"
+        },
+        {
+          "name": "4"
+        },
+        {
+          "name": "5",
+          "layout": "BSP"
+        },
+        {
+          "name": "6",
+          "layout": "BSP"
+        },
+        {
+          "name": "7",
+          "layout": "RightMainVerticalStack"
+        }
+      ]
+    }
+  ]
+}
