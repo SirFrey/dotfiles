@@ -32,6 +32,12 @@ export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 export EDITOR='nvim'
 export VISUAL='nvim'
 
+# Keybindings
+bindkey -e
+bindkey '^p' history-search-backward
+bindkey '^n' history-search-forward
+bindkey '^[w' kill-region
+
 # ------------------------------------------------------------------------------
 # SHELL OPTIONS & HISTORY
 # ------------------------------------------------------------------------------
