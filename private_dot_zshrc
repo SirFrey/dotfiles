@@ -15,6 +15,11 @@ path=(
     /usr/local/bin
     /usr/bin
     /bin
+    
+    # Windows Subsystem for Linux (WSL) paths
+    "/mnt/c/Windows"
+    "/mnt/c/Program Files"
+    "/mnt/c/Program Files (x86)"
 )
 
 # Bun
@@ -153,3 +158,9 @@ eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 # starship prompt
 eval "$(starship init zsh)"
+
+# Added by Bugster CLI installer
+export PATH="$PATH:/home/moises/.local/bin"
+
+# bun completions
+[ -s "/home/moises/.bun/_bun" ] && source "/home/moises/.bun/_bun"
