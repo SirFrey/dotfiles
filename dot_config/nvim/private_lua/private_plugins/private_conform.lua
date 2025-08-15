@@ -2,6 +2,10 @@ return {
   'stevearc/conform.nvim',
   dependencies = { 'mason.nvim' },
   cmd = 'ConformInfo',
+  event = 'BufWritePre',
+  keys = {
+    { '<space>f', function() require('conform').format({ async = true }) end, desc = 'Format buffer (Conform)' },
+  },
   opts = {
     formatters_by_ft = {
       ['javascript'] = { 'prettier' },

@@ -2,7 +2,7 @@ return {
   {
     -- TODO: Put some backgronds of color CmpNormal
     "folke/noice.nvim",
-    enabled = true,
+    enabled = false,
     config = function()
       require("lualine").setup({
         sections = {

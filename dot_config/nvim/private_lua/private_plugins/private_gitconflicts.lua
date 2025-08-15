@@ -1,6 +1,6 @@
 return {
-  lazy = true,
-  'akinsho/git-conflict.nvim',
-  version = '*',
+  "akinsho/git-conflict.nvim",
+  event = { "BufReadPre", "BufNewFile" },
+  version = "*",
   config = true,
 }

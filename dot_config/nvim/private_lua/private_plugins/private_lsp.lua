@@ -9,18 +9,19 @@ return {
       -- Mason installer
       { 'mason-org/mason.nvim', opts = {} },
       'neovim/nvim-lspconfig',
+      'b0o/schemastore.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
       -- Mason <> lspconfig bridge
     },
+    event = { 'BufReadPre', 'BufNewFile' },
     config = function()
       require('mason-lspconfig').setup {
         -- ensure these servers are installed
-        ensure_installed = { 'pylsp', 'pyright', 'lua_ls', 'rust_analyzer', 'tailwindcss', 'ts_ls', 'vtsls' },
+        ensure_installed = { 'pylsp', 'pyright', 'lua_ls', 'rust_analyzer', 'tailwindcss', 'ts_ls', },
         automatic_enable = {
           exclude = {
             -- handled these by lspconfig below
             'jsonls',
-            'ts_ls',
             'tailwindcss',
             'lua_ls',
           },

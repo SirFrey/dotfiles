@@ -1,7 +1,7 @@
 return {
   {
     "b0o/schemastore.nvim",
-    version = false, 
-    lazy = false,
+    version = false,
+    lazy = true,
   }
 }
