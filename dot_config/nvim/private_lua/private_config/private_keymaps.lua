@@ -39,29 +39,6 @@ vim.keymap.set("n", "<leader>x", "<cmd>!chmod +x %<CR>", { silent = true })
 
 vim.keymap.set("n", "<leader>mr", "<cmd>CellularAutomaton make_it_rain<CR>")
 
--- See `:help telescope.builtin`
-vim.keymap.set("n", "<leader>?", function() require("telescope.builtin").oldfiles() end, { desc = "[?] Find recently opened files" })
-vim.keymap.set("n", "<leader><space>", function() require("telescope.builtin").buffers() end, { desc = "[ ] Find existing buffers" })
-vim.keymap.set("n", "<leader>ff", function() require("telescope.builtin").find_files() end, {})
-vim.keymap.set("n", "<leader>fs", function() require("telescope.builtin").git_files() end, {})
-vim.keymap.set("n", "<leader>fg", function() require("telescope.builtin").live_grep() end, {})
-vim.keymap.set("n", "<leader>ws", function() require("telescope.builtin").grep_string() end, {})
-vim.keymap.set("n", "<leader>fb", function() require("telescope.builtin").buffers() end, {})
-vim.keymap.set("n", "<leader>fh", function() require("telescope.builtin").help_tags() end, {})
-
--- Harpoon
-vim.keymap.set("n", "<leader>a", function() require("harpoon"):list():add() end)
-vim.keymap.set("n", "<C-e>", function() local h=require("harpoon"); h.ui:toggle_quick_menu(h:list()) end)
-vim.keymap.set("n", "<C-h>", function() require("harpoon"):list():select(1) end)
-vim.keymap.set("n", "<C-t>", function() require("harpoon"):list():select(2) end)
-vim.keymap.set("n", "<C-n>", function() require("harpoon"):list():select(3) end)
-vim.keymap.set("n", "<C-s>", function() require("harpoon"):list():select(4) end)
--- Toggle previous & next buffers stored within Harpoon list
-vim.keymap.set("n", "<C-S-P>", function() require("harpoon"):list():prev() end)
-vim.keymap.set("n", "<C-S-N>", function() require("harpoon"):list():next() end)
-vim.keymap.set("n", "<C-i>", function() require("harpoon"):list():prev() end)
-vim.keymap.set("n", "<C-o>", function() require("harpoon"):list():next() end)
-
 vim.keymap.set({ "i" }, "<C-K>", function()
   require("luasnip").expand()
 end, { silent = true })
@@ -113,8 +90,6 @@ vim.api.nvim_create_autocmd("LspAttach", {
     end, opts)
   end,
 })
--- oil
-vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
 -- spectre
 vim.keymap.set("n", "<leader>S", '<cmd>lua require("spectre").toggle()<CR>', {
   desc = "Toggle Spectre",

@@ -1,10 +1,10 @@
 return {
   {
-    'windwp/nvim-ts-autotag',
-    event = 'InsertEnter',
-    ft = { 'html', 'xml', 'javascript', 'javascriptreact', 'typescriptreact', 'svelte', 'vue' },
+    "windwp/nvim-ts-autotag",
+    event = "InsertEnter",
+    ft = { "html", "xml", "javascript", "javascriptreact", "typescriptreact", "svelte", "vue" },
     config = function()
-      require('nvim-ts-autotag').setup {
+      require("nvim-ts-autotag").setup({
         opts = {
           -- Defaults
           enable_close = true, -- Auto close tags
@@ -15,34 +15,55 @@ return {
         -- Empty by default, useful if one of the "opts" global settings
         -- doesn't work well in a specific filetype
         per_filetype = {
-          ['html'] = {
+          ["html"] = {
             enable_close = false,
           },
         },
-      }
+      })
     end,
   },
   {
-    'nvim-treesitter/nvim-treesitter',
-    build = ':TSUpdate',
-    event = { 'BufReadPost', 'BufNewFile' },
+    "nvim-treesitter/nvim-treesitter",
+    build = ":TSUpdate",
+    event = { "BufReadPost", "BufNewFile" },
     config = function()
-      local configs = require 'nvim-treesitter.configs'
-      configs.setup {
-        ensure_installed = { 'c', 'lua', 'vim', 'vimdoc', 'query', 'elixir', 'heex', 'javascript', 'typescript', 'html', 'css', 'rust', 'astro', 'tsx' },
+      local configs = require("nvim-treesitter.configs")
+      configs.setup({
+        ensure_installed = {
+          "c",
+          "lua",
+          "vim",
+          "vimdoc",
+          "query",
+          "elixir",
+          "heex",
+          "javascript",
+          "typescript",
+          "html",
+          "css",
+          "rust",
+          "astro",
+          "tsx",
+        },
         sync_install = false,
         highlight = { enable = true },
         incremental_selection = {
           enable = true,
           keymaps = {
-            init_selection = '<C-space>',
-            node_incremental = '<C-space>',
+            init_selection = "<C-space>",
+            node_incremental = "<C-space>",
             scope_incremental = false,
-            node_decremental = '<bs>',
+            node_decremental = "<bs>",
           },
         },
         indent = { enable = true },
-      }
+      })
     end,
+  },
+  {
+    "catgoose/nvim-colorizer.lua",
+    event = "BufReadPre",
+    opts = { -- set to setup table
+    },
   },
 }

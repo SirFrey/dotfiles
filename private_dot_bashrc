@@ -105,3 +105,5 @@ if ! shopt -oq posix; then
 fi
 
 . "$HOME/.cargo/env"
+
+PATH=~/.console-ninja/.bin:$PATH
