@@ -43,6 +43,9 @@ bindkey '^p' history-search-backward
 bindkey '^n' history-search-forward
 bindkey '^[w' kill-region
 
+# vi mode
+bindkey -v
+
 # ------------------------------------------------------------------------------
 # SHELL OPTIONS & HISTORY
 # ------------------------------------------------------------------------------
