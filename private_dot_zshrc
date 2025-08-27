@@ -122,10 +122,6 @@ zinit light Aloxaf/fzf-tab
 zinit ice from"gh-r" as"program" pick"*linux_amd64.tar.gz"
 zinit light junegunn/fzf
 
-### Vim Mode
-zinit ice depth=1
-zinit light jeffreytse/zsh-vi-mode
-
 ### Oh My Zsh Snippets
 # Load only the necessary parts of OMZ without the slow startup.
 zinit snippet OMZL::git.zsh
