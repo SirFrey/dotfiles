@@ -1,8 +1,9 @@
 return {
-  'xvzc/chezmoi.nvim',
-  dependencies = { 'nvim-lua/plenary.nvim' },
+  "xvzc/chezmoi.nvim",
+  event = "VeryLazy",
+  dependencies = { "nvim-lua/plenary.nvim" },
   config = function()
-    require("chezmoi").setup {
-    }
-  end
+    require("chezmoi").setup({})
+  end,
 }
+
