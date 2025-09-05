@@ -90,6 +90,17 @@ vim.api.nvim_create_autocmd("LspAttach", {
     end, opts)
   end,
 })
+--  e.g. ~/.local/share/chezmoi/*
+vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+    pattern = { os.getenv("HOME") .. "/.local/share/chezmoi/*" },
+    callback = function(ev)
+        local bufnr = ev.buf
+        local edit_watch = function()
+            require("chezmoi.commands.__edit").watch(bufnr)
+        end
+        vim.schedule(edit_watch)
+    end,
+})
 -- spectre
 vim.keymap.set("n", "<leader>S", '<cmd>lua require("spectre").toggle()<CR>', {
   desc = "Toggle Spectre",
