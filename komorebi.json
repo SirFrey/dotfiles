@@ -12,11 +12,10 @@
   "border": false,
   "border_width": 8,
   "border_offset": -1,
+  "font_family": "JetBrains Mono",
   "theme": {
-    "palette": "Base16",
-    "name": "Ashes",
-    "unfocused_border": "Base03",
-    "bar_accent": "Base0D"
+    "palette": "Catppuccin",
+    "name": "Mocha"
   },
   "monitors": [
     {
@@ -44,6 +43,34 @@
         },
         {
           "name": "7",
+          "layout": "RightMainVerticalStack"
+        }
+      ]
+    },
+    {
+      "workspaces": [
+        {
+          "name": "I"
+        },
+        {
+          "name": "II"
+        },
+        {
+          "name": "III"
+        },
+        {
+          "name": "IV"
+        },
+        {
+          "name": "V",
+          "layout": "BSP"
+        },
+        {
+          "name": "VI",
+          "layout": "BSP"
+        },
+        {
+          "name": "VII",
           "layout": "RightMainVerticalStack"
         }
       ]
