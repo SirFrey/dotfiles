@@ -23,3 +23,6 @@
 	old = red bold
 	new = green bold
 	whitespace = red reverse
+
+[push]
+  autoSetupRemote = true

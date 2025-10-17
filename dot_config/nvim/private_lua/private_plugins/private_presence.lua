@@ -1,15 +1,30 @@
 return {
-  "jiriks74/presence.nvim",
-  event = "UIEnter",
+  "vyfor/cord.nvim",
+  event = "VeryLazy",
+  build = ":Cord update",
   config = function()
-    -- The setup config table shows all available config options with their default values:
-    require("presence").setup({
-      -- General options
-      auto_update       = true,                       -- Update activity based on autocmd events (if `false`, map or manually execute `:lua package.loaded.presence:update()`)
-      neovim_image_text = "The One True Text Editor", -- Text displayed when hovered over the Neovim image
-      main_image        = "neovim",                   -- Main image display (either "neovim" or "file")
-      log_level         = "debug",                    -- Log messages at or above this level (one of the following: "debug", "info", "warn", "error")
+    require("cord").setup({
+      editor = {
+        tooltip = "Nice Editor",
+      },
+      idle = {
+        timeout = 600000,
+        details = "Away From You",
+      },
+      text = {
+        editing = function(opts)
+          return "Editing " .. opts.filename
+        end, -- or use a string value like 'Editing a file' if you don't want it to be dynamic
+        -- etc ...
+      },
+      log_level = "trace", -- one of 'trace', 'debug', 'info', 'warn', 'error'
+      advanced = {
+        server = {
+          pipe_path = "/tmp/discord-ipc-0",
+        },
+      },
     })
   end,
-  enabled = false
+  -- opts = {}
+  --
 }
