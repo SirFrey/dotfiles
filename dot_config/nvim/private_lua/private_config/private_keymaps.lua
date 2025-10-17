@@ -117,35 +117,35 @@ vim.keymap.set("n", "<leader>sp", '<cmd>lua require("spectre").open_file_search(
 
 -- Copilot
 -- when Ctrl + C is pressed, it will close the suggestion
-vim.keymap.set("i", "<C-c>", function()
-  require("copilot.suggestion").dismiss()
-  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<C-c>", true, false, true), "n", false)
-end, {
-  desc = "[copilot] dismiss suggestion",
-  silent = true,
-})
-
--- accept Copilot even if cmp is showing, and do NOT let cmp reopen afterward
-vim.keymap.set("i", "<C-y>", function()
-  local ok_cmp, cmp = pcall(require, "cmp")
-  if ok_cmp then
-    if cmp.visible() then
-      cmp.abort()  -- close the menu and roll back any inline edits from the session
-                   -- (use cmp.close() if you prefer not to roll back). 
-    end
-    vim.g.__cmp_suppress_once = true  -- stop auto popup on the next TextChangedI
-  end
-
-  local ok_cop, cop = pcall(require, "copilot.suggestion")
-  if ok_cop and cop.is_visible() then
-    cop.accept()  -- insert the ghost text as real text
-  end
-
-  -- allow cmp to resume after a short delay
-  vim.defer_fn(function()
-    vim.g.__cmp_suppress_once = false
-  end, 120)  -- tweak the debounce (ms) if needed
-end, {
-  desc = "[copilot] accept suggestion and keep cmp closed",
-  silent = true,
-})
+-- vim.keymap.set("i", "<C-c>", function()
+--   require("copilot.suggestion").dismiss()
+--   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<C-c>", true, false, true), "n", false)
+-- end, {
+--   desc = "[copilot] dismiss suggestion",
+--   silent = true,
+-- })
+-- 
+-- -- accept Copilot even if cmp is showing, and do NOT let cmp reopen afterward
+-- vim.keymap.set("i", "<C-y>", function()
+--   local ok_cmp, cmp = pcall(require, "cmp")
+--   if ok_cmp then
+--     if cmp.visible() then
+--       cmp.abort()  -- close the menu and roll back any inline edits from the session
+--                    -- (use cmp.close() if you prefer not to roll back). 
+--     end
+--     vim.g.__cmp_suppress_once = true  -- stop auto popup on the next TextChangedI
+--   end
+-- 
+--   local ok_cop, cop = pcall(require, "copilot.suggestion")
+--   if ok_cop and cop.is_visible() then
+--     cop.accept()  -- insert the ghost text as real text
+--   end
+-- 
+--   -- allow cmp to resume after a short delay
+--   vim.defer_fn(function()
+--     vim.g.__cmp_suppress_once = false
+--   end, 120)  -- tweak the debounce (ms) if needed
+-- end, {
+--   desc = "[copilot] accept suggestion and keep cmp closed",
+--   silent = true,
+-- })
