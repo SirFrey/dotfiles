@@ -1,0 +1,33 @@
+{{ $email := promptStringOnce . "email" "What is your email address" -}}
+{{ $user := promptStringOnce . "user" "What is your username" -}}
+{{ $name := promptStringOnce . "name" "What is your name" -}}
+
+
+[user]
+	email = {{ $email }}
+	user = {{ $user }}
+	name = {{ $name }}
+[init]
+	defaultBranch = main
+[core]
+	pager = 
+[interactive]
+	diffFilter = diff-so-fancy --patch
+[color]
+	ui = true
+[color "diff-highlight"]
+	oldNormal = red bold
+	oldHighlight = red bold 52
+	newNormal = green bold
+	newHighlight = green bold 22
+[color "diff"]
+	meta = 11
+	frag = magenta bold
+	func = 146 bold
+	commit = yellow bold
+	old = red bold
+	new = green bold
+	whitespace = red reverse
+
+[push]
+  autoSetupRemote = true
