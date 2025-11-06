@@ -1,0 +1,10 @@
+YASB_FONT_ENGINE=native
+# YASB_WEATHER_API_KEY=your_api_key_here
+# YASB_GITHUB_TOKEN=your_github_token_here
+# YASB_WEATHER_LOCATION=your_location_here
+# Some Qt settings
+QT_SCREEN_SCALE_FACTORS="1.25;1"
+QT_SCALE_FACTOR_ROUNDING_POLICY="PassThrough"
+# OpenGL settings, Use "desktop" for hardware acceleration, "software" for software rendering
+QT_OPENGL="desktop" 
+QT_OPENGL="software"
