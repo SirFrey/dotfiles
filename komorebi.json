@@ -9,10 +9,6 @@
   "border_width": 8,
   "border_offset": -1,
   "font_family": "JetBrains Mono",
-  "theme": {
-    "palette": "Catppuccin",
-    "name": "Mocha"
-  },
   "monitors": [
     {
       "floating_layer_behaviour": "Float",
