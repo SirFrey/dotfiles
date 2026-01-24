@@ -1,13 +1,13 @@
-# This is default and very simple configuration file for Yasb.
-# For more information about configuration options, please visit the Wiki https://github.com/amnweb/yasb/wiki
 watch_stylesheet: true
 watch_config: true
 debug: false
-update_check: true # Enable automatic update check.
+update_check: true
+
 komorebi:
   start_command: "komorebic start --whkd"
   stop_command: "komorebic stop --whkd"
-  reload_command: "komorebic stop --whkd && komorebic start --whkd"
+  reload_command: "komorebic reload-configuration"
+
 bars:
   primary-bar:
     enabled: true
@@ -16,306 +16,132 @@ bars:
     alignment:
       position: "top"
       center: false
-    animation:
-      enabled: true
-      duration: 400
     blur_effect:
       enabled: false
       acrylic: false
-      dark_mode: false
+      dark_mode: true
       round_corners: false
-      round_corners_type: "normal"
-      border_color: "system"
+      border_color: "None"
     window_flags:
-      always_on_top: false
+      always_on_top: true
       windows_app_bar: true
+      hide_on_fullscreen: true
     dimensions:
       width: "100%"
-      height: 32
+      height: 30
     padding:
-      top: 0
-      left: 0
-      bottom: 0
-      right: 0
+      left: 4
+      bottom: 2
+      right: 4
     widgets:
       left:
-        - "home"
-        - "komorebi_workspaces"
         - "komorebi_active_layout"
-        - "active_window"
-      center:
-        - "clock"
-        - "github"
+        - "komorebi_workspaces"
+        - "systray"
         - "cpu"
         - "memory"
+        - "traffic"
+      center: []
       right:
-        - "media"
         - "weather"
-        - "microphone"
+        - "clock"
         - "volume"
+        - "media"
         - "notifications"
-        - "pomodoro"
-        - "power_menu"
+
 widgets:
-  pomodoro:
-    type: "yasb.pomodoro.PomodoroWidget"
-    options:
-      label: "<span>{icon}</span> {remaining}"
-      label_alt: "<span>{icon}</span> {session}/{total_sessions} - {status}"
-      work_duration: 25
-      break_duration: 5
-      long_break_duration: 15
-      long_break_interval: 4
-      auto_start_breaks: true
-      auto_start_work: true
-      sound_notification: true
-      show_notification: true
-      hide_on_break: false
-      session_target: 8
-      icons:
-        work: "\uf252"
-        break: "\uf253"
-        paused: "\uf254"
-      menu:
-        blur: true
-        round_corners: true
-        round_corners_type: "normal"
-        border_color: "System"
-        alignment: "right"
-        direction: "down"
-        offset_top: 6
-        offset_left: 0
-        circle_background_color: "#09ffffff"
-        circle_work_progress_color: "#88c0d0"
-        circle_break_progress_color: "#a3be8c"
-        circle_thickness: 8
-        circle_size: 160
-      callbacks:
-        on_left: "toggle_menu"
-        on_middle: "reset_timer"
-        on_right: "toggle_label"
-      label_shadow:
-        enabled: true
-        color: "black"
-        radius: 3
-        offset: [1, 1]
-  memory:
-    type: "yasb.memory.MemoryWidget"
-    options:
-      label: "<span>\uf4bc</span> {virtual_mem_free}/{virtual_mem_total}"
-      label_alt: "<span>\uf4bc</span> VIRT: {virtual_mem_percent}% SWAP: {swap_mem_percent}%"
-      update_interval: 5000
-      callbacks:
-        on_left: "toggle_label"
-        on_middle: "do_nothing"
-        on_right: "do_nothing"
-      memory_thresholds:
-        low: 25
-        medium: 50
-        high: 90
-      histogram_icons:
-        - "\u2581" # 0%
-        - "\u2581" # 10%
-        - "\u2582" # 20%
-        - "\u2583" # 30%
-        - "\u2584" # 40%
-        - "\u2585" # 50%
-        - "\u2586" # 60%
-        - "\u2587" # 70%
-        - "\u2588" # 80%+
-      label_shadow:
-        enabled: true
-        color: "black"
-        radius: 3
-        offset: [1, 1]
   cpu:
     type: "yasb.cpu.CpuWidget"
     options:
-      label: "<span>\uf4bc</span> {info[percent][total]}%"
-      label_alt: "<span>\uf437</span> {info[histograms][cpu_percent]}"
-      update_interval: 2000
-      cpu_thresholds:
-        low: 25
-        medium: 50
-        high: 90
+      label: "<span>\ue950</span> {info[percent][total]}%"
+      label_alt: "{info[histograms][cpu_percent]}"
+      update_interval: 1000
       histogram_icons:
-        - "\u2581" # 0%
-        - "\u2581" # 10%
-        - "\u2582" # 20%
-        - "\u2583" # 30%
-        - "\u2584" # 40%
-        - "\u2585" # 50%
-        - "\u2586" # 60%
-        - "\u2587" # 70%
-        - "\u2588" # 80%+
+        - '\u2581' # 0%
+        - '\u2581' # 10%
+        - '\u2582' # 20%
+        - '\u2583' # 30%
+        - '\u2584' # 40%
+        - '\u2585' # 50%
+        - '\u2586' # 60%
+        - '\u2587' # 70%
+        - '\u2588' # 80%+
       histogram_num_columns: 8
       callbacks:
-        on_right: "exec cmd /c Taskmgr"
-      label_shadow:
-        enabled: true
-        color: "black"
-        radius: 3
-        offset: [1, 1]
-  github:
-    type: "yasb.github.GithubWidget"
-    options:
-      label: "<span>\ueba1</span>"
-      label_alt: "Notifications {data}" # {data} return number of unread notification
-      token: env # GitHub Personal access tokens (classic) https://github.com/settings/tokens
-      max_notification: 30 # Max number of notification displaying in menu max: 50
-      notification_dot:
-        enabled: True
-        corner: "bottom_left" # Can be "top_left", "top_right", "bottom_left", "bottom_right"
-        color: "red" # Can be hex color or string
-        margin: [1, 1] # x and y margin for the dot
-      only_unread: false # Show only unread or all notifications;
-      show_comment_count: false # Summarize comment totals for issues, PRs, and discussions
-      reason_filters: [] # e.g. ['mention', 'assign'] to limit notifications by reason
-      max_field_size: 54 # Max characters in title before truncation.
-      update_interval: 300 # Check for new notification in seconds
-      menu:
-        blur: True # Enable blur effect for the menu
-        round_corners: True # Enable round corners for the menu (this option is not supported on Windows 10)
-        round_corners_type: "normal" # Set the type of round corners for the menu (normal, small) (this option is not supported on Windows 10)
-        border_color: "System" # Set the border color for the menu (this option is not supported on Windows 10)
-        alignment: "right"
-        direction: "down"
-        show_categories: false
-        categories_order:
-          ["PullRequest", "Issue", "CheckSuite", "Release", "Discussion"]
-      label_shadow:
-        enabled: True
-        color: "black"
-        radius: 3
-        offset: [1, 1]
-  home:
-    type: "yasb.home.HomeWidget"
-    options:
-      label: "<span>\udb81\udf17</span>"
-      menu_list:
-        - { title: "User Home", path: "~" }
-        - { title: "Download", path: "~\\Downloads" }
-        - { title: "Documents", path: "~\\Documents" }
-        - { title: "Pictures", path: "~\\Pictures" }
-      system_menu: true
-      power_menu: true
-      blur: false
-  media:
-    type: "yasb.media.MediaWidget"
-    options:
-      label: "{title}"
-      label_alt: "{artist} - {title}"
-      max_field_size:
-        label: 16
-        label_alt: 24
-      show_thumbnail: true
-      controls_only: false
-      controls_left: true
-      controls_hide: true
-      hide_empty: true
-      thumbnail_alpha: 100
-      thumbnail_padding: 16
-      thumbnail_corner_radius: 0
-      thumbnail_edge_fade: true
-      icons:
-        prev_track: "\udb81\udcae"
-        next_track: "\udb81\udcad"
-        play: "\udb81\udc0a"
-        pause: "\udb80\udfe4"
-      media_menu:
-        blur: false
-        round_corners: false
-        alignment: "right"
-        direction: "down"
-        offset_top: 6
-        offset_left: 0
-        thumbnail_corner_radius: 4
-        thumbnail_size: 100
-        max_title_size: 80
-        max_artist_size: 20
-        show_source: true
-      label_shadow:
-        enabled: true
-        color: "#000000"
-        radius: 2
-        offset: [1, 1]
-      scrolling_label:
-        enabled: true
-        update_interval_ms: 50
-        style: "left" # can be "left", "right", "bounce", "bounce-ease"
-        separator: " | "
-        label_padding: 1
-      callbacks:
-        on_left: "toggle_media_menu"
-        on_middle: "do_nothing"
+        on_left: "toggle_cpu_menu"
+        on_middle: "exec cmd /c Taskmgr"
         on_right: "toggle_label"
-  active_window:
-    type: "yasb.active_window.ActiveWindowWidget"
+      container_padding:
+        top: 0
+        left: 0
+        bottom: 0
+        right: 0
+      label_shadow:
+        enabled: true
+        color: "black"
+        radius: 5
+        offset: [0, 0]
+
+  memory:
+    type: "yasb.memory.MemoryWidget"
     options:
-      label: "{win[title]}"
-      label_alt: "[class_name='{win[class_name]}' exe='{win[process][name]}' hwnd={win[hwnd]}]"
-      label_no_window: ""
-      label_icon: true
-      label_icon_size: 14
-      max_length: 30
-      max_length_ellipsis: "..."
-      monitor_exclusive: true
-  clock:
-    type: "yasb.clock.ClockWidget"
+      label: "<span>\uefc5</span> {virtual_mem_used}/{virtual_mem_total}"
+      update_interval: 5000
+      callbacks:
+        on_left: "do_nothing"
+        on_middle: "do_nothing"
+        on_right: "do_nothing"
+      container_padding:
+        top: 0
+        left: 0
+        bottom: 0
+        right: 0
+      label_shadow:
+        enabled: true
+        color: "black"
+        radius: 5
+        offset: [0, 0]
+
+  traffic:
+    type: "yasb.traffic.TrafficWidget"
     options:
-      label: "{%a, %d %b %H:%M}"
-      label_alt: "{%A, %d %B %Y %H:%M}"
-      timezones: []
-      calendar:
-        blur: false
+      label: "<span class='download'>\uea9a {download_speed}</span>|<span class='upload'>{upload_speed} \ueaa1</span>"
+      update_interval: 1000
+      menu:
         round_corners: false
         alignment: "center"
         direction: "down"
+        offset_top: true
       callbacks:
-        on_left: "toggle_calendar"
-        on_right: "toggle_label"
-  komorebi_workspaces:
-    type: "komorebi.workspaces.WorkspaceWidget"
-    options:
-      label_offline: "\u23fc Offline"
-      label_workspace_btn: "\u000d"
-      label_workspace_active_btn: "\u000d"
-      label_workspace_populated_btn: "\u000d"
-      label_default_name: "{index}"
-      label_zero_index: false
-      hide_empty_workspaces: false
-      hide_if_offline: true
-      animation: true
+        on_left: "toggle_menu"
+        on_right: "do_nothing"
+      container_padding:
+        top: 0
+        left: 0
+        bottom: 0
+        right: 0
+      label_shadow:
+        enabled: true
+        color: "black"
+        radius: 5
+        offset: [0, 0]
+
   komorebi_active_layout:
     type: "komorebi.active_layout.ActiveLayoutWidget"
     options:
       hide_if_offline: true
       label: "{icon}"
       layouts:
-        [
-          "bsp",
-          "columns",
-          "rows",
-          "grid",
-          "vertical_stack",
-          "horizontal_stack",
-          "ultrawide_vertical_stack",
-          "right_main_vertical_stack",
-          "floating",
-        ]
+        - "bsp"
+        - "columns"
+        - "rows"
+        - "grid"
+        - "scrolling"
+        - "vertical_stack"
+        - "horizontal_stack"
+        - "ultrawide_vertical_stack"
+        - "right_main_vertical_stack"
       layout_icons:
-        # bsp: "BSP"
-        # columns: "COLS"
-        # rows: "ROWS"
-        # grid: "GRID"
-        # vertical_stack: "V-STACK"
-        # horizontal_stack: "H-STACK"
-        # ultrawide_vertical_stack: "W-STACK"
-        # right_main_vertical_stack: "RMV-STACK"
-        # monocle: "MONOCLE"
-        # maximized: "MAX"
-        # paused: "PAUSED"
-        # floating: "FLOATING"
         bsp: "\uebeb"
         columns: "\uebf7"
         rows: "\uec01"
@@ -330,20 +156,179 @@ widgets:
         floating: "\uf2d2"
         paused: "\udb83\udf89"
         tiling: "\udb81\ude40"
-
       callbacks:
-        on_left: "next_layout"
-        on_middle: "toggle_float"
-        on_right: "prev_layout"
+        on_left: "toggle_layout_menu"
+        on_middle: "toggle_tiling"
+        on_right: "next_layout"
+      layout_menu:
+        blur: true
+        round_corners: false
+        alignment: "left"
+        direction: "down"
+        offset_top: true
+        show_layout_icons: true
+      container_padding:
+        top: 0
+        left: 0
+        bottom: 0
+        right: 0
+      label_shadow:
+        enabled: true
+        color: "black"
+        radius: 5
+        offset: [0, 0]
+
+  komorebi_workspaces:
+    type: "komorebi.workspaces.WorkspaceWidget"
+    options:
+      label_offline: "<span>\ueb96</span>"
+      label_default_name: ""
+      label_zero_index: false
+      hide_empty_workspaces: true
+      hide_if_offline: true
+      container_padding:
+        top: 0
+        left: 0
+        bottom: 0
+        right: 0
+      label_shadow:
+        enabled: true
+        color: "black"
+        radius: 5
+        offset: [0, 0]
+
+  active_window:
+    type: "yasb.active_window.ActiveWindowWidget"
+    options:
+      label: "{win[title]}"
+      label_alt: "{win[process][name]} | {win[class_name]}"
+      label_icon: false
+      label_icon_size: 16
+      max_length: 30
+      max_length_ellipsis: "..."
+      monitor_exclusive: false
+      animation:
+        enabled: false
+        duration: 200
+        type: "fadeInOut"
+      rewrite:
+        - pattern: "Visual Studio Code"
+          replacement: "VSC"
+      ignore_window:
+        classes: []
+        processes: []
+        titles:
+          - Task Switching
+          - Magnifier
+          - Notification Center
+          - Raycast
+          - Windows Shell Experience Host
+          - Shut Down Windows
+          - Delete File
+          - Delete Folder
+          - Delete Shortcut
+          - Delete Multiple Items
+      callbacks:
+        on_left: "do_nothing"
+        on_right: "toggle_label"
+      container_padding:
+        top: 0
+        left: 0
+        bottom: 0
+        right: 0
+      label_shadow:
+        enabled: true
+        color: "black"
+        radius: 5
+        offset: [0, 0]
+
+  media:
+    type: "yasb.media.MediaWidget"
+    options:
+      label: "{title}"
+      label_alt: "{artist}"
+      callbacks:
+        on_left: "toggle_media_menu"
+        on_middle: "toggle_play_pause"
+        on_right: "toggle_label"
+      max_field_size:
+        label: 60
+        label_alt: 60
+      hide_empty: true
+      show_thumbnail: false
+      scrolling_label:
+        enabled: false
+        update_interval_ms: 33
+        ease_slope: 20
+        ease_pos: 0.8
+        ease_min: 0.5
+      icons:
+        prev_track: "\ue892"
+        next_track: "\ue893"
+        play: "\ue768"
+        pause: "\ue769"
+      media_menu:
+        blur: true
+        round_corners: false
+        round_corners_type: "normal"
+        border_color: "system"
+        alignment: "center"
+        direction: "down"
+        offset_top: true
+        thumbnail_corner_radius: 6
+        thumbnail_size: 100
+        max_title_size: 40
+        max_artist_size: 20
+        show_source: true
+    icons:
+      play: "\ue768"
+      pause: "\ue769"
+      prev_track: "\ue892"
+      next_track: "\ue893"
+    container_padding:
+      top: 0
+      left: 0
+      bottom: 0
+      right: 0
+    label_shadow:
+      enabled: true
+      color: "black"
+      radius: 5
+      offset: [0, 0]
+
+  systray:
+    type: "yasb.systray.SystrayWidget"
+    options:
+      class_name: "systray"
+      label_collapsed: "\ued59"
+      label_expanded: "\ue77c"
+      show_unpinned: false
+      show_unpinned_button: true
+      show_battery: false
+      show_volume: false
+      show_network: false
+      container_padding:
+        top: 0
+        left: 0
+        bottom: 0
+        right: 0
+      container_shadow:
+        enabled: true
+        color: "black"
+        radius: 5
+        offset: [0, 0]
+
   weather:
     type: "yasb.weather.WeatherWidget"
     options:
       label: "<span>{icon}</span> {temp}"
-      label_alt: "{location}: Min {min_temp}, Max {max_temp}, Humidity {humidity}"
-      api_key: env
+      label_alt: "Low: {min_temp} | High: {max_temp} | Humidity: {humidity}"
+      api_key: "f5bc02da05ce44f0b29231930251207" # Get your free API key from https://www.weatherapi.com/
+      show_alerts: true
       update_interval: 600
       hide_decimal: true
-      location: env
+      units: "metric"
+      location: "Cairo, Egypt"
       callbacks:
         on_left: "toggle_card"
         on_middle: "do_nothing"
@@ -365,71 +350,101 @@ widgets:
         thunderstormNight: "\ue338"
         default: "\uebaa"
       weather_card:
-        blur: false
+        blur: true
         round_corners: false
-        alignment: "right"
+        round_corners_type: "normal"
+        border_color: "System"
+        alignment: "center"
         direction: "down"
-        icon_size: 64
-        show_hourly_forecast: true
-        time_format: "24h"
-        hourly_point_spacing: 76
-        hourly_icon_size: 32
-        icon_smoothing: true
-        temp_line_width: 2
-        current_line_color: "#8EAEE8"
-        current_line_width: 1
-        current_line_style: "dot"
+        icon_size: 40
+        offset_top: true
+      container_padding:
+        top: 0
+        left: 0
+        bottom: 0
+        right: 0
+      label_shadow:
+        enabled: true
+        color: "black"
+        radius: 5
+        offset: [0, 0]
+
+  clock:
+    type: "yasb.clock.ClockWidget"
+    options:
+      label: "{%I:%M %p}"
+      label_alt: "{%A, %d %B %Y}"
+      update_interval: 1000
+      calendar:
+        blur: true
+        round_corners: false
+        alignment: "center"
+        direction: "down"
+        offset_top: true
+      callbacks:
+        on_left: "toggle_calendar"
+        on_right: "toggle_label"
+      container_padding:
+        top: 0
+        left: 0
+        bottom: 0
+        right: 0
+      label_shadow:
+        enabled: true
+        color: "black"
+        radius: 5
+        offset: [0, 0]
+
   volume:
     type: "yasb.volume.VolumeWidget"
     options:
-      label: "<span>{icon}</span> {level}"
-      label_alt: "{volume}"
-      tooltip: false
+      label: "<span>{icon}</span>{level}"
       volume_icons:
-        - "\ueee8"
-        - "\uf026"
-        - "\uf027"
-        - "\uf027"
-        - "\uf028"
+        - "\ue74f" # Icon for muted
+        - "\ue992" # Icon for 0-10% volume
+        - "\ue993" # Icon for 11-30% volume
+        - "\ue994" # Icon for 31-60% volume
+        - "\ue995" # Icon for 61-100% volume
+      audio_menu:
+        blur: true
+        round_corners: false
+        round_corners_type: "normal"
+        border_color: "System"
+        alignment: "center"
+        direction: "down"
+        offset_top: true
       callbacks:
-        on_left: "toggle_mute"
-        on_right: "exec cmd.exe /c start ms-settings:sound"
-  microphone:
-    type: "yasb.microphone.MicrophoneWidget"
-    options:
-      label: "<span>{icon}</span> {level}"
-      label_alt: "<span>{icon}</span> {level}%"
-      icons:
-        normal: "\udb80\udf6c"
-        muted: "\udb80\udf6d"
-      callbacks:
-        on_left: "toggle_mute"
-        on_middle: "toggle_label"
-        on_right: "exec cmd.exe /c start ms-settings:sound"
-  power_menu:
-    type: "yasb.power_menu.PowerMenuWidget"
-    options:
-      label: "\uf011"
-      uptime: True
-      blur: False
-      blur_background: True
-      animation_duration: 200
-      button_row: 5
-      buttons:
-        shutdown: ["\uf011", "Shut Down"]
-        restart: ["\uead2", "Restart"]
-        signout: ["\udb80\udf43", "Sign out"]
-        hibernate: ["\uf28e", "Hibernate"]
-        sleep: ["\u23fe", "Sleep"]
-        cancel: ["", "Cancel"]
+        on_left: "toggle_volume_menu"
+        on_right: "toggle_mute"
+      container_padding:
+        top: 0
+        left: 0
+        bottom: 0
+        right: 0
+      label_shadow:
+        enabled: true
+        color: "black"
+        radius: 5
+        offset: [0, 0]
+
   notifications:
     type: "yasb.notifications.NotificationsWidget"
     options:
-      label: "<span>\uf476</span> {count}"
-      label_alt: "{count} notifications"
+      label: "<span>\ue7e7</span>{count}"
+      label_alt: "{count} Notification(s)"
       hide_empty: true
       tooltip: false
       callbacks:
         on_left: "toggle_notification"
-        on_right: "do_nothing"
-        on_middle: "toggle_label"
+        on_middle: "clear_notifications"
+        on_right: "toggle_label"
+      container_padding:
+        top: 0
+        left: 10
+        bottom: 0
+        right: 10
+      label_shadow:
+        enabled: true
+        color: "black"
+        radius: 5
+        offset: [0, 0]
