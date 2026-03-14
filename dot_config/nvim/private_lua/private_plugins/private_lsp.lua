@@ -1,6 +1,10 @@
 return {
-  -- Lua dev helpers
-  { "folke/neodev.nvim", opts = {} },
+  -- Lua dev helpers (lazydev replaces deprecated neodev)
+  {
+    "folke/lazydev.nvim",
+    ft = "lua",
+    opts = {},
+  },
 
   -- LSP + Mason integration
   {
@@ -8,28 +12,20 @@ return {
     dependencies = {
       -- Mason installer
       { "mason-org/mason.nvim", opts = {} },
+      -- Provides default server configs for vim.lsp.config
       "neovim/nvim-lspconfig",
       "b0o/schemastore.nvim",
       "WhoIsSethDaniel/mason-tool-installer.nvim",
-      -- Mason <> lspconfig bridge
     },
     event = { "BufReadPre", "BufNewFile" },
     config = function()
       require("mason-lspconfig").setup({
-        -- ensure these servers are installed
         ensure_installed = { "pylsp", "pyright", "lua_ls", "rust_analyzer", "tailwindcss", "ts_ls", "jsonls" },
-        automatic_enable = {
-          exclude = {
-            -- handled these by lspconfig below
-            "jsonls",
-            "tailwindcss",
-            "lua_ls",
-          },
-        },
+        -- Automatically calls vim.lsp.enable() for all installed servers
+        automatic_enable = true,
       })
-      local mason_tool_installer = require("mason-tool-installer")
 
-      mason_tool_installer.setup({
+      require("mason-tool-installer").setup({
         ensure_installed = {
           "prettierd", -- prettier formatter
           "stylua", -- lua formatter
@@ -39,18 +35,22 @@ return {
           "eslint_d", -- js linter
         },
       })
-      -- base client capabilities
-      local capabilities = vim.lsp.protocol.make_client_capabilities()
-      capabilities.textDocument.completion.completionItem.snippetSupport = true
 
-      -- setup Lua dev
-      require("neodev").setup()
-
-      local lspconfig = require("lspconfig")
+      -- Shared capabilities for all servers (Neovim 0.11+ native API)
+      vim.lsp.config("*", {
+        capabilities = {
+          textDocument = {
+            completion = {
+              completionItem = {
+                snippetSupport = true,
+              },
+            },
+          },
+        },
+      })
 
       -- JSON with schemastore
-      lspconfig.jsonls.setup({
-        capabilities = capabilities,
+      vim.lsp.config("jsonls", {
         settings = {
           json = {
             schemas = require("schemastore").json.schemas(),
@@ -59,30 +59,16 @@ return {
         },
       })
 
-      -- TypeScript
-      --  lspconfig.ts_ls.setup {
-      --    capabilities = capabilities,
-      --    root_dir = function(...)
-      --      return require('lspconfig.util').root_pattern '.git'(...)
-      --    end,
-      --  }
       -- Tailwind CSS
-      lspconfig.tailwindcss.setup({
-        capabilities = capabilities,
-        root_dir = function(...)
-          return require("lspconfig.util").root_pattern(".git")(...)
-        end,
+      vim.lsp.config("tailwindcss", {
+        root_markers = { ".git" },
       })
 
-      -- Lua (runtime, diagnostics, workspace)
-      lspconfig.lua_ls.setup({
-        capabilities = capabilities,
+      -- Lua (lazydev handles runtime/workspace/vim globals automatically)
+      vim.lsp.config("lua_ls", {
         settings = {
           Lua = {
             completion = { callSnippet = "Replace" },
-            runtime = { version = "LuaJIT" },
-            diagnostics = { globals = { "vim" } },
-            workspace = { library = vim.api.nvim_get_runtime_file("", true) },
           },
         },
       })

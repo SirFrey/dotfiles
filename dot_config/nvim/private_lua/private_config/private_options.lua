@@ -32,12 +32,13 @@ vim.opt.undofile = true
 vim.opt.scrolloff = 8
 vim.opt.isfname:append '@-@'
 
-vim.opt.updatetime = 50
 -- Make line numbers default
 vim.wo.number = true
 
 -- Relative numbers
 vim.wo.relativenumber = true
+-- Minimize number column width (auto-grows when needed)
+vim.opt.numberwidth = 1
 -- Enable mouse mode
 vim.o.mouse = 'a'
 
@@ -55,9 +56,6 @@ vim.o.timeoutlen = 300
 -- Set completeopt to have a better completion experience
 vim.o.completeopt = 'menuone,noselect'
 
--- NOTE: You should make sure your terminal supports this
-vim.o.termguicolors = true
-
 vim.opt.tabstop = 4
 vim.opt.softtabstop = 4
 vim.opt.shiftwidth = 2
@@ -67,20 +65,7 @@ vim.opt.smartindent = true
 vim.opt.signcolumn = 'yes'
 
 vim.cmd 'autocmd BufRead,BufNewFile *.mdx set filetype=mdx'
--- colors for floating windows
---
--- [[ Highlight on yank ]]
-local highlight_group = vim.api.nvim_create_augroup('YankHighlight', { clear = true })
-
-vim.api.nvim_create_autocmd('TextYankPost', {
-  callback = function()
-    vim.highlight.on_yank()
-  end,
-  group = highlight_group,
-  pattern = '*',
-})
 
 vim.diagnostic.config { virtual_text = true }
-
 
 vim.g.transparent_groups = vim.list_extend(vim.g.transparent_groups or {}, { "NormalFloat" })

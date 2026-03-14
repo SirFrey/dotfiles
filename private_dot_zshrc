@@ -18,10 +18,11 @@ path=(
     
     # Windows Subsystem for Linux (WSL) paths
     "/mnt/c/Windows"
-    "/mnt/c/Program Files"
-    "/mnt/c/Program Files (x86)"
+    "/mnt/c/Windows/System32"
     "/mnt/c/Users/moise/wsl_programs"
 )
+# Browser
+export BROWSER="/mnt/c/Program\ Files\ \(x86\)/Microsoft/Edge/Application/msedge.exe"
 
 # Bun
 export BUN_INSTALL="$HOME/.bun"
@@ -38,14 +39,6 @@ export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 export EDITOR='nvim'
 export VISUAL='nvim'
 
-# Keybindings
-bindkey -e
-bindkey '^p' history-search-backward
-bindkey '^n' history-search-forward
-bindkey '^[w' kill-region
-
-# vi mode
-bindkey -v
 
 # ------------------------------------------------------------------------------
 # SHELL OPTIONS & HISTORY
@@ -77,7 +70,7 @@ alias ls='ls --color'
 alias fd='fdfind'
 alias pn='pnpm'
 alias c='clear'
-
+alias cd='z'
 bindkey -s ^f "tmux-sessionizer\n"
 
 # ------------------------------------------------------------------------------
@@ -114,6 +107,14 @@ zinit ice wait"0" lucid
 zinit light zdharma-continuum/fast-syntax-highlighting
 
 zinit light zsh-users/zsh-autosuggestions
+
+zinit light zsh-users/zsh-history-substring-search
+bindkey "$terminfo[kcuu1]" history-substring-search-up
+bindkey "$terminfo[kcud1]" history-substring-search-down
+bindkey -M viins "$terminfo[kcuu1]" history-substring-search-up
+bindkey -M viins "$terminfo[kcud1]" history-substring-search-down
+bindkey -M vicmd 'k' history-substring-search-up
+bindkey -M vicmd 'j' history-substring-search-down
 
 zinit ice wait"0" lucid
 zinit light zsh-users/zsh-completions
@@ -180,3 +181,21 @@ nvim() {
 
      command nvim "$@"
 }
+
+# Rust
+. "$HOME/.cargo/env"
+
+# opencode
+export PATH=/home/moises/.opencode/bin:$PATH
+export PATH="$PATH:/snap/bin"
+
+eval "$(zoxide init zsh)"
+
+
+# ------------------------------------------------------------------------------
+# KEYBINDINGS
+# ------------------------------------------------------------------------------
+
+# Reduce ESC delay for snappier vi mode
+export KEYTIMEOUT=1
+

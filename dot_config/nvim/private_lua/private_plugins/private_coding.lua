@@ -27,8 +27,8 @@ return {
     build = ":TSUpdate",
     event = { "BufReadPost", "BufNewFile" },
     config = function()
-      local configs = require("nvim-treesitter.configs")
-      configs.setup({
+      -- New nvim-treesitter API: .setup() only manages parser installation.
+      require("nvim-treesitter").setup({
         ensure_installed = {
           "c",
           "lua",
@@ -45,25 +45,20 @@ return {
           "astro",
           "tsx",
         },
-        sync_install = false,
-        highlight = { enable = true },
-        incremental_selection = {
-          enable = true,
-          keymaps = {
-            init_selection = "<C-space>",
-            node_incremental = "<C-space>",
-            scope_incremental = false,
-            node_decremental = "<bs>",
-          },
-        },
-        indent = { enable = true },
+      })
+      -- Highlighting is built into Neovim 0.11 but must be explicitly started.
+      -- This starts treesitter-based highlighting for every buffer that has a parser.
+      vim.api.nvim_create_autocmd("FileType", {
+        group = vim.api.nvim_create_augroup("TreesitterStart", { clear = true }),
+        callback = function(ev)
+          pcall(vim.treesitter.start, ev.buf)
+        end,
       })
     end,
   },
   {
     "catgoose/nvim-colorizer.lua",
     event = "BufReadPre",
-    opts = { -- set to setup table
-    },
+    opts = {},
   },
 }
