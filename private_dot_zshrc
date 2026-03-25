@@ -57,10 +57,6 @@ setopt hist_save_no_dups
 setopt hist_ignore_dups
 setopt hist_find_no_dups
 
-HISTFILE=~/.zsh_history
-HISTSIZE=5000
-SAVEHIST=$HISTSIZE
-
 # ------------------------------------------------------------------------------
 # ALIASES & BINDINGS
 # ------------------------------------------------------------------------------
@@ -106,6 +102,7 @@ zinit light-mode for \
 zinit ice wait"0" lucid
 zinit light zdharma-continuum/fast-syntax-highlighting
 
+zinit ice wait"0" lucid atload"_zsh_autosuggest_start"
 zinit light zsh-users/zsh-autosuggestions
 
 zinit light zsh-users/zsh-history-substring-search
@@ -132,11 +129,6 @@ zinit light junegunn/fzf
 zinit snippet OMZL::git.zsh
 zinit snippet OMZP::git
 zinit snippet OMZP::sudo
-zinit snippet OMZP::asdf
-zinit snippet OMZP::archlinux
-zinit snippet OMZP::aws
-zinit snippet OMZP::kubectl
-zinit snippet OMZP::kubectx
 zinit snippet OMZP::command-not-found
 
 
@@ -164,13 +156,8 @@ eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 # starship prompt
 eval "$(starship init zsh)"
 
-# Added by Bugster CLI installer
-export PATH="$PATH:/home/moises/.local/bin"
-
 # bun completions
 [ -s "/home/moises/.bun/_bun" ] && source "/home/moises/.bun/_bun"
-
-PATH=~/.console-ninja/.bin:$PATH
 
 nvim() {
      if ! pidof socat > /dev/null 2>&1; then
@@ -197,5 +184,5 @@ eval "$(zoxide init zsh)"
 # ------------------------------------------------------------------------------
 
 # Reduce ESC delay for snappier vi mode
-export KEYTIMEOUT=1
+export KEYTIMEOUT=5
 
