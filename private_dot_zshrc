@@ -1,3 +1,6 @@
+# Secrets
+[ -f ~/.secrets/opencode ] && set -a && source ~/.secrets/opencode && set +a
+
 typeset -U path
 path=(
     # Homebrew (run `brew shellenv` once to ensure this is the correct path)
@@ -62,7 +65,10 @@ setopt hist_find_no_dups
 # ------------------------------------------------------------------------------
 alias v='nvim'
 alias vim='nvim'
-alias ls='ls --color'
+alias lg='lazygit'
+alias ls='eza --color=always --icons'
+alias ll='eza -la --icons'
+alias cat='batcat --paging=never'
 alias fd='fdfind'
 alias pn='pnpm'
 alias c='clear'
@@ -124,6 +130,25 @@ zinit light Aloxaf/fzf-tab
 zinit ice from"gh-r" as"program" pick"*linux_amd64.tar.gz"
 zinit light junegunn/fzf
 
+### GitHub Release Binaries (managed by zinit)
+zinit ice from"gh-r" as"program" bpick"*x86_64-unknown-linux-gnu.tar.gz"
+zinit light eza-community/eza
+
+zinit ice from"gh-r" as"program" bpick"*x86_64-unknown-linux-gnu.tar.gz" mv"bat-*/bat -> bat"
+zinit light sharkdp/bat
+
+zinit ice from"gh-r" as"program" bpick"*Linux_x86_64.tar.gz"
+zinit light jesseduffield/lazygit
+
+zinit ice from"gh-r" as"program" bpick"*x86_64-unknown-linux-musl.tar.gz" atload'autoload -Uz compinit && compinit -C; eval "$(zoxide init zsh)"'
+zinit light ajeetdsouza/zoxide
+
+zinit ice from"gh-r" as"program" bpick"*linux-amd64.tar.gz" mv"fastfetch-*/usr/bin/fastfetch -> fastfetch"
+zinit light fastfetch-cli/fastfetch
+
+zinit ice from"gh-r" as"program" bpick"*x86_64-unknown-linux-gnu.tar.gz" atload'eval "$(starship init zsh)"'
+zinit light starship/starship
+
 ### Oh My Zsh Snippets
 # Load only the necessary parts of OMZ without the slow startup.
 zinit snippet OMZL::git.zsh
@@ -136,8 +161,8 @@ zinit snippet OMZP::command-not-found
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 zstyle ':completion:*' menu no
-zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
-zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza --color=always --icons $realpath'
+zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza --color=always --icons $realpath'
 
 # ------------------------------------------------------------------------------
 # FRAMEWORK INITIALIZATIONS
@@ -153,8 +178,7 @@ eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 # Bun completions
 [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
-# starship prompt
-eval "$(starship init zsh)"
+# starship prompt — managed by zinit
 
 # bun completions
 [ -s "/home/moises/.bun/_bun" ] && source "/home/moises/.bun/_bun"
@@ -174,10 +198,10 @@ nvim() {
 
 # opencode
 export PATH=/home/moises/.opencode/bin:$PATH
+alias opencode='opencode --port'
 export PATH="$PATH:/snap/bin"
 
-eval "$(zoxide init zsh)"
-
+# zoxide — managed by zinit
 
 # ------------------------------------------------------------------------------
 # KEYBINDINGS
@@ -186,3 +210,11 @@ eval "$(zoxide init zsh)"
 # Reduce ESC delay for snappier vi mode
 export KEYTIMEOUT=5
 
+
+alias claude="/home/moises/.claude/local/claude"
+
+# GitHub token for Claude Code marketplace
+export GITHUB_TOKEN=$(gh auth token 2>/dev/null)
+
+# Resorsi launcher
+alias resorsi='cd ~/resorsi && claude'
