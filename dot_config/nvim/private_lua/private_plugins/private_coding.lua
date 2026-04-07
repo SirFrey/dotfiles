@@ -24,6 +24,7 @@ return {
   },
   {
     "nvim-treesitter/nvim-treesitter",
+    branch = "main",
     build = ":TSUpdate",
     event = { "BufReadPost", "BufNewFile" },
     config = function()
@@ -46,14 +47,8 @@ return {
           "tsx",
         },
       })
-      -- Highlighting is built into Neovim 0.11 but must be explicitly started.
-      -- This starts treesitter-based highlighting for every buffer that has a parser.
-      vim.api.nvim_create_autocmd("FileType", {
-        group = vim.api.nvim_create_augroup("TreesitterStart", { clear = true }),
-        callback = function(ev)
-          pcall(vim.treesitter.start, ev.buf)
-        end,
-      })
+      -- Neovim 0.12 enables treesitter highlighting by default for all
+      -- filetypes with an installed parser; no manual autocmd needed.
     end,
   },
   {

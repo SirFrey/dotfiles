@@ -1,9 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": [
-    "opencode-antigravity-auth@latest",
-    "opencode-anthropic-oauth"
-  ],
+  "plugin": ["opencode-antigravity-auth@latest", "opencode-anthropic-oauth"],
   "provider": {
     "google": {
       "npm": "@ai-sdk/google",
@@ -15,14 +12,8 @@
             "output": 65535
           },
           "modalities": {
-            "input": [
-              "text",
-              "image",
-              "pdf"
-            ],
-            "output": [
-              "text"
-            ]
+            "input": ["text", "image", "pdf"],
+            "output": ["text"]
           },
           "variants": {
             "low": {
@@ -40,14 +31,8 @@
             "output": 65535
           },
           "modalities": {
-            "input": [
-              "text",
-              "image",
-              "pdf"
-            ],
-            "output": [
-              "text"
-            ]
+            "input": ["text", "image", "pdf"],
+            "output": ["text"]
           },
           "variants": {
             "low": {
@@ -65,14 +50,8 @@
             "output": 65536
           },
           "modalities": {
-            "input": [
-              "text",
-              "image",
-              "pdf"
-            ],
-            "output": [
-              "text"
-            ]
+            "input": ["text", "image", "pdf"],
+            "output": ["text"]
           },
           "variants": {
             "minimal": {
@@ -96,14 +75,8 @@
             "output": 64000
           },
           "modalities": {
-            "input": [
-              "text",
-              "image",
-              "pdf"
-            ],
-            "output": [
-              "text"
-            ]
+            "input": ["text", "image", "pdf"],
+            "output": ["text"]
           }
         },
         "antigravity-claude-opus-4-6-thinking": {
@@ -113,14 +86,8 @@
             "output": 64000
           },
           "modalities": {
-            "input": [
-              "text",
-              "image",
-              "pdf"
-            ],
-            "output": [
-              "text"
-            ]
+            "input": ["text", "image", "pdf"],
+            "output": ["text"]
           },
           "variants": {
             "low": {
@@ -142,14 +109,8 @@
             "output": 65536
           },
           "modalities": {
-            "input": [
-              "text",
-              "image",
-              "pdf"
-            ],
-            "output": [
-              "text"
-            ]
+            "input": ["text", "image", "pdf"],
+            "output": ["text"]
           }
         },
         "gemini-2.5-pro": {
@@ -159,14 +120,8 @@
             "output": 65536
           },
           "modalities": {
-            "input": [
-              "text",
-              "image",
-              "pdf"
-            ],
-            "output": [
-              "text"
-            ]
+            "input": ["text", "image", "pdf"],
+            "output": ["text"]
           }
         },
         "gemini-3-flash-preview": {
@@ -176,14 +131,8 @@
             "output": 65536
           },
           "modalities": {
-            "input": [
-              "text",
-              "image",
-              "pdf"
-            ],
-            "output": [
-              "text"
-            ]
+            "input": ["text", "image", "pdf"],
+            "output": ["text"]
           }
         },
         "gemini-3-pro-preview": {
@@ -193,14 +142,8 @@
             "output": 65535
           },
           "modalities": {
-            "input": [
-              "text",
-              "image",
-              "pdf"
-            ],
-            "output": [
-              "text"
-            ]
+            "input": ["text", "image", "pdf"],
+            "output": ["text"]
           }
         },
         "gemini-3.1-pro-preview": {
@@ -210,14 +153,8 @@
             "output": 65535
           },
           "modalities": {
-            "input": [
-              "text",
-              "image",
-              "pdf"
-            ],
-            "output": [
-              "text"
-            ]
+            "input": ["text", "image", "pdf"],
+            "output": ["text"]
           }
         },
         "gemini-3.1-pro-preview-customtools": {
@@ -227,14 +164,8 @@
             "output": 65535
           },
           "modalities": {
-            "input": [
-              "text",
-              "image",
-              "pdf"
-            ],
-            "output": [
-              "text"
-            ]
+            "input": ["text", "image", "pdf"],
+            "output": ["text"]
           }
         }
       }
@@ -258,6 +189,15 @@
     }
   },
   "mcp": {
+    "docuseal": {
+      "type": "remote",
+      "url": "https://doc.resorsi.com/mcp",
+      "oauth": false,
+      "headers": {
+        "Authorization": "Bearer r6LcRWq7uLHkF11BXhmm9rLiGMG9SzRtZxSmu8y5ow6"
+      },
+      "enabled": false
+    },
     "n8n-mcp": {
       "type": "local",
       "enabled": false,
@@ -324,11 +264,7 @@
     "gitlab": {
       "enabled": false,
       "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "@zereight/mcp-gitlab"
-      ],
+      "command": ["npx", "-y", "@zereight/mcp-gitlab"],
       "environment": {
         "GITLAB_USE_OAUTH": "true",
         "GITLAB_OAUTH_CLIENT_ID": "{env:GITLAB_OAUTH_CLIENT_ID}",
@@ -357,7 +293,7 @@
       "environment": {
         "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "{env:PLAYWRIGHT_TOKEN}"
       },
-      "enabled": true
+      "enabled": false
     },
     "pandadoc": {
       "type": "remote",
@@ -371,8 +307,10 @@
         "npx",
         "mcp-remote",
         "https://mcp.emailbison.com/mcp",
-        "--header", "Authorization: Bearer {env:EMAILBISON_API_KEY}",
-        "--header", "Instance-URL: https://send.resorsi.com"
+        "--header",
+        "Authorization: Bearer {env:EMAILBISON_API_KEY}",
+        "--header",
+        "Instance-URL: https://send.resorsi.com"
       ]
     }
   }
