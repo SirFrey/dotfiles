@@ -29,14 +29,15 @@ vim.keymap.set("n", "<C-f>", "<cmd>silent !tmux neww tmux-sessionizer<CR>")
 vim.keymap.set("v", "<leader>d", '"_d')
 vim.keymap.set("n", "<leader>d", '"_d')
 
-vim.keymap.set("n", "<C-k>", "<cmd>cnext<CR>zz")
-vim.keymap.set("n", "<C-j>", "<cmd>cprev<CR>zz")
+vim.keymap.set("n", "]q", "<cmd>cnext<CR>zz", { desc = "Quickfix: next" })
+vim.keymap.set("n", "[q", "<cmd>cprev<CR>zz", { desc = "Quickfix: prev" })
 vim.keymap.set("n", "<leader>k", "<cmd>lnext<CR>zz")
 vim.keymap.set("n", "<leader>j", "<cmd>lprev<CR>zz")
 
 -- Jump list navigation (since <C-i>/<C-o> are used by harpoon)
 vim.keymap.set("n", "<leader>o", "<C-o>", { desc = "Jump list: back" })
 vim.keymap.set("n", "<leader>i", "<C-i>", { desc = "Jump list: forward" })
+vim.keymap.set("n", "<BS>", "<C-o>", { desc = "Jump list: back" })
 
 vim.keymap.set("n", "<leader>sb", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]])
 vim.keymap.set("n", "<leader>x", "<cmd>!chmod +x %<CR>", { silent = true })
@@ -82,12 +83,26 @@ vim.api.nvim_create_autocmd("LspAttach", {
     end, opts)
     vim.keymap.set("n", "<space>rn", vim.lsp.buf.rename, opts)
     vim.keymap.set({ "n", "v" }, "<space>ca", vim.lsp.buf.code_action, opts)
-    vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
+    -- grr = references, grn = rename, gra = code action, gri = implementation,
+    -- grt = type definition, grx = codelens are all built-in since 0.11/0.12
     vim.keymap.set("n", "<space>f", function()
       require("conform").format({ async = true })
     end, opts)
+    -- gf/gF -> LSP definition so imports with aliases (@/) and missing extensions resolve correctly
+    vim.keymap.set("n", "gf", vim.lsp.buf.definition, opts)
+    vim.keymap.set("n", "gF", vim.lsp.buf.definition, opts)
   end,
 })
+-- Quick TS LSP swap: :UseTsgo / :UseTsLs
+vim.api.nvim_create_user_command("UseTsgo", function()
+  vim.lsp.enable("ts_ls", false)
+  vim.lsp.enable("tsgo")
+end, {})
+vim.api.nvim_create_user_command("UseTsLs", function()
+  vim.lsp.enable("tsgo", false)
+  vim.lsp.enable("ts_ls")
+end, {})
+
 --  e.g. ~/.local/share/chezmoi/*
 vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
     pattern = { os.getenv("HOME") .. "/.local/share/chezmoi/*" },

@@ -24,6 +24,9 @@ path=(
     "/mnt/c/Windows/System32"
     "/mnt/c/Users/moise/wsl_programs"
 )
+
+export PATH="$HOME/bin:$PATH"
+
 # Browser
 export BROWSER="/mnt/c/Program\ Files\ \(x86\)/Microsoft/Edge/Application/msedge.exe"
 
@@ -68,7 +71,7 @@ alias vim='nvim'
 alias lg='lazygit'
 alias ls='eza --color=always --icons'
 alias ll='eza -la --icons'
-alias cat='batcat --paging=never'
+alias cat='bat --paging=never'
 alias fd='fdfind'
 alias pn='pnpm'
 alias c='clear'
@@ -198,7 +201,6 @@ nvim() {
 
 # opencode
 export PATH=/home/moises/.opencode/bin:$PATH
-alias opencode='opencode --port'
 export PATH="$PATH:/snap/bin"
 
 # zoxide — managed by zinit
@@ -210,11 +212,13 @@ export PATH="$PATH:/snap/bin"
 # Reduce ESC delay for snappier vi mode
 export KEYTIMEOUT=5
 
-
-alias claude="/home/moises/.claude/local/claude"
+# Corepack
+export COREPACK_ENABLE_AUTO_PIN=0
 
 # GitHub token for Claude Code marketplace
 export GITHUB_TOKEN=$(gh auth token 2>/dev/null)
 
 # Resorsi launcher
 alias resorsi='cd ~/resorsi && claude'
+# CF CLI completions
+[[ -f "/home/moises/.config/cf/completions/_cf.zsh" ]] && source "/home/moises/.config/cf/completions/_cf.zsh"

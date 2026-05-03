@@ -1,6 +1,10 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": ["opencode-antigravity-auth@latest", "opencode-anthropic-oauth"],
+  "plugin": [
+    "opencode-antigravity-auth@latest",
+    "opencode-claude-auth",
+    "oh-my-openagent@latest"
+  ],
   "provider": {
     "google": {
       "npm": "@ai-sdk/google",
@@ -12,8 +16,14 @@
             "output": 65535
           },
           "modalities": {
-            "input": ["text", "image", "pdf"],
-            "output": ["text"]
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
           },
           "variants": {
             "low": {
@@ -31,8 +41,14 @@
             "output": 65535
           },
           "modalities": {
-            "input": ["text", "image", "pdf"],
-            "output": ["text"]
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
           },
           "variants": {
             "low": {
@@ -50,8 +66,14 @@
             "output": 65536
           },
           "modalities": {
-            "input": ["text", "image", "pdf"],
-            "output": ["text"]
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
           },
           "variants": {
             "minimal": {
@@ -75,8 +97,14 @@
             "output": 64000
           },
           "modalities": {
-            "input": ["text", "image", "pdf"],
-            "output": ["text"]
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
           }
         },
         "antigravity-claude-opus-4-6-thinking": {
@@ -86,8 +114,14 @@
             "output": 64000
           },
           "modalities": {
-            "input": ["text", "image", "pdf"],
-            "output": ["text"]
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
           },
           "variants": {
             "low": {
@@ -109,8 +143,14 @@
             "output": 65536
           },
           "modalities": {
-            "input": ["text", "image", "pdf"],
-            "output": ["text"]
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
           }
         },
         "gemini-2.5-pro": {
@@ -120,8 +160,14 @@
             "output": 65536
           },
           "modalities": {
-            "input": ["text", "image", "pdf"],
-            "output": ["text"]
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
           }
         },
         "gemini-3-flash-preview": {
@@ -131,8 +177,14 @@
             "output": 65536
           },
           "modalities": {
-            "input": ["text", "image", "pdf"],
-            "output": ["text"]
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
           }
         },
         "gemini-3-pro-preview": {
@@ -142,8 +194,14 @@
             "output": 65535
           },
           "modalities": {
-            "input": ["text", "image", "pdf"],
-            "output": ["text"]
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
           }
         },
         "gemini-3.1-pro-preview": {
@@ -153,8 +211,14 @@
             "output": 65535
           },
           "modalities": {
-            "input": ["text", "image", "pdf"],
-            "output": ["text"]
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
           }
         },
         "gemini-3.1-pro-preview-customtools": {
@@ -164,8 +228,14 @@
             "output": 65535
           },
           "modalities": {
-            "input": ["text", "image", "pdf"],
-            "output": ["text"]
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
           }
         }
       }
@@ -264,7 +334,11 @@
     "gitlab": {
       "enabled": false,
       "type": "local",
-      "command": ["npx", "-y", "@zereight/mcp-gitlab"],
+      "command": [
+        "npx",
+        "-y",
+        "@zereight/mcp-gitlab"
+      ],
       "environment": {
         "GITLAB_USE_OAUTH": "true",
         "GITLAB_OAUTH_CLIENT_ID": "{env:GITLAB_OAUTH_CLIENT_ID}",
@@ -286,9 +360,9 @@
         "@playwright/mcp@latest",
         "--extension",
         "--browser",
-        "msedge",
+        "chrome",
         "--executable-path",
-        "/mnt/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
+        "/mnt/c/Program Files/Google/Chrome/Application/chrome.exe"
       ],
       "environment": {
         "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "{env:PLAYWRIGHT_TOKEN}"

@@ -26,29 +26,26 @@ return {
     "nvim-treesitter/nvim-treesitter",
     branch = "main",
     build = ":TSUpdate",
-    event = { "BufReadPost", "BufNewFile" },
+    lazy = false,
     config = function()
-      -- New nvim-treesitter API: .setup() only manages parser installation.
-      require("nvim-treesitter").setup({
-        ensure_installed = {
-          "c",
-          "lua",
-          "vim",
-          "vimdoc",
-          "query",
-          "elixir",
-          "heex",
-          "javascript",
-          "typescript",
-          "html",
-          "css",
-          "rust",
-          "astro",
-          "tsx",
-        },
+      -- main branch API: setup() only takes install_dir, not ensure_installed
+      require("nvim-treesitter").setup()
+
+      -- Install parsers (no-op if already installed)
+      require("nvim-treesitter").install({
+        "c", "lua", "vim", "vimdoc", "query",
+        "elixir", "heex", "javascript", "typescript",
+        "html", "css", "rust", "astro", "tsx",
       })
-      -- Neovim 0.12 enables treesitter highlighting by default for all
-      -- filetypes with an installed parser; no manual autocmd needed.
+
+      -- Highlighting is NOT automatic in nvim-treesitter main branch.
+      -- Must explicitly start treesitter for each buffer.
+      vim.api.nvim_create_autocmd("FileType", {
+        group = vim.api.nvim_create_augroup("TreesitterStart", { clear = true }),
+        callback = function()
+          pcall(vim.treesitter.start)
+        end,
+      })
     end,
   },
   {

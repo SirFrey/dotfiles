@@ -17,13 +17,34 @@ return {
       "b0o/schemastore.nvim",
       "WhoIsSethDaniel/mason-tool-installer.nvim",
     },
-    event = { "BufReadPre", "BufNewFile" },
+    event = "VeryLazy",
     config = function()
+      -- Toggle: set vim.g.use_ts_ls = true before loading to use ts_ls instead of tsgo
+      local use_tsgo = not vim.g.use_ts_ls
+
       require("mason-lspconfig").setup({
         ensure_installed = { "pylsp", "pyright", "lua_ls", "rust_analyzer", "tailwindcss", "ts_ls", "jsonls" },
-        -- Automatically calls vim.lsp.enable() for all installed servers
-        automatic_enable = true,
+        automatic_enable = {
+          exclude = use_tsgo and { "ts_ls" } or {},
+        },
       })
+
+      -- tsgo: TypeScript 7 native LSP (installed via pnpm add -g @typescript/native-preview)
+      if use_tsgo then
+        vim.lsp.enable("tsgo")
+      end
+
+      -- Quick swap commands: :UseTsgo / :UseTsLs
+      vim.api.nvim_create_user_command("UseTsgo", function()
+        vim.lsp.stop_client(vim.lsp.get_clients({ name = "ts_ls" }))
+        vim.lsp.enable("tsgo")
+        vim.notify("Switched to tsgo")
+      end, {})
+      vim.api.nvim_create_user_command("UseTsLs", function()
+        vim.lsp.stop_client(vim.lsp.get_clients({ name = "tsgo" }))
+        vim.lsp.enable("ts_ls")
+        vim.notify("Switched to ts_ls")
+      end, {})
 
       require("mason-tool-installer").setup({
         ensure_installed = {

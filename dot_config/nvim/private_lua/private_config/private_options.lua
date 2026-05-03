@@ -68,4 +68,6 @@ vim.cmd 'autocmd BufRead,BufNewFile *.mdx set filetype=mdx'
 
 vim.diagnostic.config { virtual_text = true }
 
+
+
 vim.g.transparent_groups = vim.list_extend(vim.g.transparent_groups or {}, { "NormalFloat" })
