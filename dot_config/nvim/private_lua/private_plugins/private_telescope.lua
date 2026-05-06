@@ -60,6 +60,13 @@ return {
         end,
         desc = "Telescope: Help",
       },
+      {
+        "<leader>fk",
+        function()
+          require("telescope.builtin").keymaps()
+        end,
+        desc = "Telescope: Keymaps",
+      },
     },
     config = function()
       require("telescope").setup({

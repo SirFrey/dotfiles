@@ -11,8 +11,8 @@ return {
     { '<leader>4', function() require('harpoon'):list():select(4) end, desc = 'Harpoon: 4' },
     { '<C-S-P>', function() require('harpoon'):list():prev() end, desc = 'Harpoon: Prev' },
     { '<C-S-N>', function() require('harpoon'):list():next() end, desc = 'Harpoon: Next' },
-    { '<C-i>', function() require('harpoon'):list():prev() end, desc = 'Harpoon: Prev' },
-    { '<C-o>', function() require('harpoon'):list():next() end, desc = 'Harpoon: Next' },
+    { '[h', function() require('harpoon'):list():prev() end, desc = 'Harpoon: Prev' },
+    { ']h', function() require('harpoon'):list():next() end, desc = 'Harpoon: Next' },
   },
   config = function()
     require("harpoon"):setup()
