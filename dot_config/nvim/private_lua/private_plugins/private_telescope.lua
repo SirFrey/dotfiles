@@ -67,6 +67,27 @@ return {
         end,
         desc = "Telescope: Keymaps",
       },
+      {
+        "<leader>cz",
+        function()
+          require("telescope").extensions.chezmoi.find_files()
+        end,
+        desc = "Telescope: Chezmoi files",
+      },
+      {
+        "<leader>fc",
+        function()
+          require("telescope").extensions.chezmoi.find_files({
+            targets = vim.fn.stdpath("config"),
+            args = {
+              "--path-style", "absolute",
+              "--include", "files",
+              "--exclude", "externals",
+            },
+          })
+        end,
+        desc = "Telescope: Chezmoi config",
+      },
     },
     config = function()
       require("telescope").setup({
@@ -94,24 +115,6 @@ return {
       local telescope = require("telescope")
 
       telescope.load_extension("chezmoi")
-      vim.keymap.set("n", "<leader>cz", telescope.extensions.chezmoi.find_files, {})
-
-      -- You can also search a specific target directory and override arguments
-      -- Here is an example with the default args
-      vim.keymap.set("n", "<leader>fc", function()
-        telescope.extensions.chezmoi.find_files({
-          targets = vim.fn.stdpath("config"),
-          -- This overrides the default arguments used with 'chezmoi list'
-          args = {
-            "--path-style",
-            "absolute",
-            "--include",
-            "files",
-            "--exclude",
-            "externals",
-          },
-        })
-      end, {})
     end,
   },
 }
