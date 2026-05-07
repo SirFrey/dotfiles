@@ -19,10 +19,8 @@ path=(
     /usr/bin
     /bin
     
-    # Windows Subsystem for Linux (WSL) paths
-    "/mnt/c/Windows"
-    "/mnt/c/Windows/System32"
-    "/mnt/c/Users/moise/wsl_programs"
+    # Windows binaries — symlink into ~/.local/bin instead of adding /mnt/c paths
+    # (9p stat-walks slow PATH lookups). Example: npiperelay.exe.
 )
 
 export PATH="$HOME/bin:$PATH"
@@ -114,13 +112,15 @@ zinit light zdharma-continuum/fast-syntax-highlighting
 zinit ice wait"0" lucid atload"_zsh_autosuggest_start"
 zinit light zsh-users/zsh-autosuggestions
 
+zinit ice wait"0" lucid atload'
+    bindkey "$terminfo[kcuu1]" history-substring-search-up
+    bindkey "$terminfo[kcud1]" history-substring-search-down
+    bindkey -M viins "$terminfo[kcuu1]" history-substring-search-up
+    bindkey -M viins "$terminfo[kcud1]" history-substring-search-down
+    bindkey -M vicmd "k" history-substring-search-up
+    bindkey -M vicmd "j" history-substring-search-down
+'
 zinit light zsh-users/zsh-history-substring-search
-bindkey "$terminfo[kcuu1]" history-substring-search-up
-bindkey "$terminfo[kcud1]" history-substring-search-down
-bindkey -M viins "$terminfo[kcuu1]" history-substring-search-up
-bindkey -M viins "$terminfo[kcud1]" history-substring-search-down
-bindkey -M vicmd 'k' history-substring-search-up
-bindkey -M vicmd 'j' history-substring-search-down
 
 zinit ice wait"0" lucid
 zinit light zsh-users/zsh-completions
@@ -152,12 +152,12 @@ zinit light fastfetch-cli/fastfetch
 zinit ice from"gh-r" as"program" bpick"*x86_64-unknown-linux-gnu.tar.gz" atload'eval "$(starship init zsh)"'
 zinit light starship/starship
 
-### Oh My Zsh Snippets
-# Load only the necessary parts of OMZ without the slow startup.
-zinit snippet OMZL::git.zsh
-zinit snippet OMZP::git
-zinit snippet OMZP::sudo
-zinit snippet OMZP::command-not-found
+### Oh My Zsh Snippets — deferred until after prompt
+zinit wait"0" lucid for \
+    OMZL::git.zsh \
+    OMZP::git \
+    OMZP::sudo \
+    OMZP::command-not-found
 
 
 # Completion styling
@@ -172,19 +172,22 @@ zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza --color=always --icons 
 # These must come after PATH setup and plugin loading.
 # ------------------------------------------------------------------------------
 
-# fnm (Node Version Manager)
-eval "$(fnm env --use-on-cd)"
+# fnm (Node Version Manager) — deferred until after prompt
+zinit ice wait"0a" lucid id-as"fnm-env" \
+    atload'eval "$(fnm env --use-on-cd)"' nocd run-atpull
+zinit light zdharma-continuum/null
 
-# Homebrew
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+# Homebrew — cached shellenv (regenerate: rm ~/.cache/brew-shellenv.zsh)
+if [[ ! -s ~/.cache/brew-shellenv.zsh || ~/.cache/brew-shellenv.zsh -ot /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+    mkdir -p ~/.cache
+    /home/linuxbrew/.linuxbrew/bin/brew shellenv > ~/.cache/brew-shellenv.zsh
+fi
+source ~/.cache/brew-shellenv.zsh
 
 # Bun completions
 [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
 # starship prompt — managed by zinit
-
-# bun completions
-[ -s "/home/moises/.bun/_bun" ] && source "/home/moises/.bun/_bun"
 
 nvim() {
      if ! pidof socat > /dev/null 2>&1; then
@@ -215,8 +218,15 @@ export KEYTIMEOUT=5
 # Corepack
 export COREPACK_ENABLE_AUTO_PIN=0
 
-# GitHub token for Claude Code marketplace
-export GITHUB_TOKEN=$(gh auth token 2>/dev/null)
+# GitHub token for Claude Code marketplace — cached (TTL 24h, refresh: rm ~/.cache/gh-token)
+_gh_token_cache=~/.cache/gh-token
+if [[ -s $_gh_token_cache ]] && [[ $(( $(date +%s) - $(stat -c %Y $_gh_token_cache 2>/dev/null || echo 0) )) -lt 86400 ]]; then
+    export GITHUB_TOKEN=$(<$_gh_token_cache)
+else
+    mkdir -p ~/.cache
+    GITHUB_TOKEN=$(gh auth token 2>/dev/null) && print -n "$GITHUB_TOKEN" > $_gh_token_cache && export GITHUB_TOKEN
+fi
+unset _gh_token_cache
 
 # Resorsi launcher
 alias resorsi='cd ~/resorsi && claude'
