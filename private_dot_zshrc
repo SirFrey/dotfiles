@@ -232,3 +232,27 @@ unset _gh_token_cache
 alias resorsi='cd ~/resorsi && claude'
 # CF CLI completions
 [[ -f "/home/moises/.config/cf/completions/_cf.zsh" ]] && source "/home/moises/.config/cf/completions/_cf.zsh"
+
+# ------------------------------------------------------------------------------
+# CHEZMOI HELPERS
+# ------------------------------------------------------------------------------
+# cze <path>     edit source in $EDITOR, apply on save (no manual copy step)
+# czg <git-args> run git inside the chezmoi source repo
+# czd            preview what `chezmoi apply` would change in ~
+# czs            preview what `chezmoi re-add` would pull from ~ into source
+# czsync [msg]   re-add ~ → diff → commit → push (autoCommit/autoPush handles
+#                the last two if enabled in chezmoi.toml; harmless either way)
+alias cze='chezmoi edit --apply'
+alias czg='chezmoi git --'
+alias czd='chezmoi diff'
+alias czs='chezmoi status'
+
+czsync() {
+    chezmoi re-add || return 1
+    chezmoi git -- diff --stat HEAD~1..HEAD 2>/dev/null
+    if ! chezmoi git -- diff --quiet HEAD 2>/dev/null; then
+        chezmoi git -- add -A
+        chezmoi git -- commit -m "${1:-sync $(date +%Y-%m-%d)}"
+        chezmoi git -- push
+    fi
+}
