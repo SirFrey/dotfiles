@@ -1,7 +1,7 @@
 return {
   "mfussenegger/nvim-lint",
   event = {
-    "BufReadPre",
+    "BufReadPost",
     "BufNewFile",
   },
   config = function()

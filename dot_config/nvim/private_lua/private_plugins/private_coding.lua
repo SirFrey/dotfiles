@@ -39,18 +39,24 @@ return {
       })
 
       -- Highlighting is NOT automatic in nvim-treesitter main branch.
-      -- Must explicitly start treesitter for each buffer.
+      -- Must explicitly start treesitter for each buffer. Deferred via
+      -- vim.schedule so the initial parse runs on the next event loop tick
+      -- rather than blocking the buffer render on FileType.
       vim.api.nvim_create_autocmd("FileType", {
         group = vim.api.nvim_create_augroup("TreesitterStart", { clear = true }),
-        callback = function()
-          pcall(vim.treesitter.start)
+        callback = function(ev)
+          vim.schedule(function()
+            if vim.api.nvim_buf_is_valid(ev.buf) then
+              pcall(vim.treesitter.start, ev.buf)
+            end
+          end)
         end,
       })
     end,
   },
   {
     "catgoose/nvim-colorizer.lua",
-    event = "BufReadPre",
+    ft = { "css", "scss", "html", "javascript", "javascriptreact", "typescript", "typescriptreact", "vue", "svelte", "lua" },
     opts = {},
   },
 }

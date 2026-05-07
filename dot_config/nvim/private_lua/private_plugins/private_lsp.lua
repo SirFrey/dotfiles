@@ -19,6 +19,18 @@ return {
     },
     event = "VeryLazy",
     config = function()
+      -- Defer vim.lsp.start so root_dir resolution and client spawn run on the
+      -- next event loop tick instead of blocking the main thread when a JS/TS
+      -- file is opened. Each affected server (tsgo, tailwindcss, eslint) does
+      -- a sync filesystem walk for root markers; deferring lets the buffer
+      -- render first.
+      local original_lsp_start = vim.lsp.start
+      vim.lsp.start = function(config, opts)
+        vim.schedule(function()
+          original_lsp_start(config, opts)
+        end)
+      end
+
       -- Toggle: set vim.g.use_ts_ls = true before loading to use ts_ls instead of tsgo
       local use_tsgo = not vim.g.use_ts_ls
 
@@ -80,9 +92,20 @@ return {
         },
       })
 
-      -- Tailwind CSS
+      -- Tailwind CSS — only attach in projects that actually have a tailwind config.
+      -- Previously used { ".git" } which made tailwindcss attach to every JS/TS
+      -- buffer in any git repo, doubling LSP traffic on BufEnter.
       vim.lsp.config("tailwindcss", {
-        root_markers = { ".git" },
+        root_markers = {
+          "tailwind.config.js",
+          "tailwind.config.cjs",
+          "tailwind.config.mjs",
+          "tailwind.config.ts",
+          "postcss.config.js",
+          "postcss.config.cjs",
+          "postcss.config.mjs",
+          "postcss.config.ts",
+        },
       })
 
       -- Lua (lazydev handles runtime/workspace/vim globals automatically)
