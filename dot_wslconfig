@@ -1,9 +1,9 @@
 [wsl2]
 networkingMode=Mirrored
-swap=83961577472
-memory=10519314432
+memory=9GB
+swap=20GB
+processors=5
 
-[automount]
-# disable auto-mounting all drives if you don't need them:
-# enabled = false
-# helloooo
+[experimental]
+autoMemoryReclaim=gradual
+sparseVhd=true
