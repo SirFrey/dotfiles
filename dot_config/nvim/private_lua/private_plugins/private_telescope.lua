@@ -1,7 +1,10 @@
 return {
   {
     "nvim-telescope/telescope.nvim",
-    dependencies = { "nvim-lua/plenary.nvim" },
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+    },
     cmd = "Telescope",
     keys = {
       {
@@ -90,15 +93,49 @@ return {
       },
     },
     config = function()
+      -- Noise dirs that shouldn't appear in fuzzy results even though they're
+      -- under hidden paths. Kept narrow: explicit caches and package stores,
+      -- not all dotfiles. `.config`, `.ssh`, `.tmux`, etc. remain searchable.
+      local noise_globs = {
+        "!**/.git/**",
+        "!**/.cache/**",
+        "!**/.local/share/**",
+        "!**/.local/state/**",
+        "!**/.npm/**",
+        "!**/.pnpm-store/**",
+        "!**/.bun/install/cache/**",
+        "!**/.cargo/registry/**",
+        "!**/.cargo/git/**",
+        "!**/.rustup/**",
+        "!**/.mozilla/**",
+        "!**/.vscode-server/**",
+        "!**/.vscode-oss/**",
+        "!**/node_modules/**",
+        "!**/.next/**",
+        "!**/dist/**",
+        "!**/build/**",
+        "!**/__pycache__/**",
+      }
+
+      local function with_globs(base)
+        local args = vim.deepcopy(base)
+        for _, g in ipairs(noise_globs) do
+          table.insert(args, "--glob")
+          table.insert(args, g)
+        end
+        return args
+      end
+
       require("telescope").setup({
         pickers = {
           find_files = {
             follow = true,
+            find_command = with_globs({ "rg", "--files", "--hidden", "-L" }),
           },
         },
         defaults = {
-          file_ignore_patterns = { ".git" },
-          vimgrep_arguments = {
+          file_ignore_patterns = { "%.git/", "node_modules/" },
+          vimgrep_arguments = with_globs({
             "rg",
             "--color=never",
             "--no-heading",
@@ -108,12 +145,20 @@ return {
             "--smart-case",
             "--hidden",
             "-L",
+          }),
+        },
+        extensions = {
+          fzf = {
+            fuzzy = true,
+            override_generic_sorter = true,
+            override_file_sorter = true,
+            case_mode = "smart_case",
           },
-          find_command = { "rg", "--files", "--hidden", "-L" },
         },
       })
       local telescope = require("telescope")
 
+      telescope.load_extension("fzf")
       telescope.load_extension("chezmoi")
     end,
   },

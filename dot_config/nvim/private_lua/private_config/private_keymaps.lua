@@ -37,8 +37,6 @@ vim.keymap.set("n", "<leader>j", "<cmd>lprev<CR>zz", { desc = "Loclist: prev" })
 -- Jump list navigation
 vim.keymap.set("n", "<leader>o", "<C-o>", { desc = "Jump list: back" })
 vim.keymap.set("n", "<leader>i", "<C-i>", { desc = "Jump list: forward" })
-vim.keymap.set("n", "<BS>", "<C-o>", { desc = "Jump list: back" })
-vim.keymap.set("n", "<Tab>", "<C-i>", { desc = "Jump list: forward" })
 
 vim.keymap.set("n", "<leader>sb", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]],
   { desc = "Substitute word in buffer" })

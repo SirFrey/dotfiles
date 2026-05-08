@@ -36,6 +36,7 @@ return {
         "c", "lua", "vim", "vimdoc", "query",
         "elixir", "heex", "javascript", "typescript",
         "html", "css", "rust", "astro", "tsx",
+        "tmux", "ssh_config",
       })
 
       -- Highlighting is NOT automatic in nvim-treesitter main branch.

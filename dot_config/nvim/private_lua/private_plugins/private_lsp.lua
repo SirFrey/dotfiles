@@ -35,7 +35,20 @@ return {
       local use_tsgo = not vim.g.use_ts_ls
 
       require("mason-lspconfig").setup({
-        ensure_installed = { "pylsp", "pyright", "lua_ls", "rust_analyzer", "tailwindcss", "ts_ls", "jsonls" },
+        ensure_installed = {
+          "astro",
+          "bashls",
+          "cssls",
+          "gh_actions_ls",
+          "jsonls",
+          "lua_ls",
+          "pylsp",
+          "pyright",
+          "rust_analyzer",
+          "tailwindcss",
+          "ts_ls",
+          "yamlls",
+        },
         automatic_enable = {
           exclude = use_tsgo and { "ts_ls" } or {},
         },
@@ -60,7 +73,8 @@ return {
 
       require("mason-tool-installer").setup({
         ensure_installed = {
-          "prettierd", -- prettier formatter
+          "prettier", -- prettier formatter (binary)
+          "prettierd", -- prettier formatter (daemon)
           "stylua", -- lua formatter
           "isort", -- python formatter
           "black", -- python formatter
@@ -116,6 +130,7 @@ return {
           },
         },
       })
+
     end,
   },
 
