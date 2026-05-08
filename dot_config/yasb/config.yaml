@@ -23,9 +23,9 @@ bars:
       round_corners: false
       border_color: "None"
     window_flags:
-      always_on_top: true
-      windows_app_bar: true
+      windows_app_bar: false
       hide_on_fullscreen: true
+      auto_hide: true
     dimensions:
       width: "100%"
       height: 30
@@ -43,7 +43,6 @@ bars:
         - "traffic"
       center: []
       right:
-        - "weather"
         - "clock"
         - "volume"
         - "media"
@@ -317,58 +316,6 @@ widgets:
         color: "black"
         radius: 5
         offset: [0, 0]
-
-  weather:
-    type: "yasb.weather.WeatherWidget"
-    options:
-      label: "<span>{icon}</span> {temp}"
-      label_alt: "Low: {min_temp} | High: {max_temp} | Humidity: {humidity}"
-      api_key: "f5bc02da05ce44f0b29231930251207" # Get your free API key from https://www.weatherapi.com/
-      show_alerts: true
-      update_interval: 600
-      hide_decimal: true
-      units: "metric"
-      location: "Cairo, Egypt"
-      callbacks:
-        on_left: "toggle_card"
-        on_middle: "do_nothing"
-        on_right: "toggle_label"
-      icons:
-        sunnyDay: "\ue30d"
-        clearNight: "\ue32b"
-        cloudyDay: "\ue312"
-        cloudyNight: "\ue311"
-        rainyDay: "\ue308"
-        rainyNight: "\ue333"
-        snowyIcyDay: "\ue30a"
-        snowyIcyNight: "\ue335"
-        blizzardDay: "\udb83\udf36"
-        blizzardNight: "\udb83\udf36"
-        foggyDay: "\ue303"
-        foggyNight: "\ue346"
-        thunderstormDay: "\ue30f"
-        thunderstormNight: "\ue338"
-        default: "\uebaa"
-      weather_card:
-        blur: true
-        round_corners: false
-        round_corners_type: "normal"
-        border_color: "System"
-        alignment: "center"
-        direction: "down"
-        icon_size: 40
-        offset_top: true
-      container_padding:
-        top: 0
-        left: 0
-        bottom: 0
-        right: 0
-      label_shadow:
-        enabled: true
-        color: "black"
-        radius: 5
-        offset: [0, 0]
-
   clock:
     type: "yasb.clock.ClockWidget"
     options:

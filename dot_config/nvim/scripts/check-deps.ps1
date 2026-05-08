@@ -47,13 +47,13 @@ function Check-Dep {
 }
 
 function Check-CCompiler {
-    foreach ($c in 'cc','gcc','clang','cl') {
+    foreach ($c in 'zig','cc','gcc','clang','cl') {
         if (Test-Tool $c) {
             Write-Status 'green' 'OK' 'C compiler' "($c)"
             return
         }
     }
-    Write-Status 'red' 'MISSING' 'C compiler' '-> winget install LLVM.LLVM  /  Visual Studio Build Tools'
+    Write-Status 'red' 'MISSING' 'C compiler' '-> winget install zig.zig  (recommended for tree-sitter on Windows)'
     $script:MissingRequired++
 }
 
@@ -65,9 +65,10 @@ Check-Dep required git    'winget install Git.Git'
 Check-Dep required rg     'winget install BurntSushi.ripgrep.MSVC                  (telescope find/grep)'
 Check-Dep required make   'winget install GnuWin32.Make / scoop install make       (plugin build steps)'
 Check-CCompiler
-Check-Dep required node   'winget install OpenJS.NodeJS / use volta or fnm         (Mason JS tooling)'
+Check-Dep required node          'winget install OpenJS.NodeJS / use volta or fnm         (Mason JS tooling)'
+Check-Dep required tree-sitter  'npm i -g tree-sitter-cli                                (treesitter parser builds)'
 # tmux: WSL-only on Windows; flag as missing with hint, but still required for claudecode + tmux nav
-Check-Dep required tmux   'WSL only - run Neovim from WSL                          (claudecode + tmux nav)'
+Check-Dep required tmux          'WSL only - run Neovim from WSL                          (claudecode + tmux nav)'
 
 Write-Host ''
 Write-Host 'Recommended'

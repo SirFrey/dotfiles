@@ -28,6 +28,15 @@ return {
     build = ":TSUpdate",
     lazy = false,
     config = function()
+      -- On Windows, tree-sitter CLI defaults to cl.exe (often absent) and MinGW's
+      -- ld.exe chokes on the \\?\ path prefix that tree-sitter-cli generates.
+      -- Use zig cc via a temp shim (no-op on Linux where cc just works).
+      if vim.fn.has("win32") == 1 and vim.env.CC == nil then
+        local zigcc = vim.fn.tempname() .. ".cmd"
+        vim.fn.writefile({ "@zig cc %* -target x86_64-windows-gnu" }, zigcc)
+        vim.env.CC = zigcc
+      end
+
       -- main branch API: setup() only takes install_dir, not ensure_installed
       require("nvim-treesitter").setup()
 

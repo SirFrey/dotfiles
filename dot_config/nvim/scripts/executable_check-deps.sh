@@ -61,8 +61,9 @@ check required git    "apt install git"
 check required rg     "apt install ripgrep                    (telescope find/grep)"
 check required make   "apt install build-essential            (plugin build steps)"
 check_c_compiler
-check required node   "use mise/fnm  /  apt install nodejs    (Mason JS tooling)"
-check required tmux   "apt install tmux                       (claudecode + tmux nav)"
+check required node          "use mise/fnm  /  apt install nodejs    (Mason JS tooling)"
+check required tree-sitter  "cargo install tree-sitter-cli          (treesitter parser builds)"
+check required tmux          "apt install tmux                       (claudecode + tmux nav)"
 
 echo
 echo "${B}Recommended${N}"
