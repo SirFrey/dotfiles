@@ -12,7 +12,8 @@ lua/config/
   lazy.lua               bootstrap + lazy.setup
 lua/plugins/             one file per plugin spec
 lazy-lock.json           pinned plugin versions
-scripts/check-deps.sh    external dep probe
+scripts/check-deps.sh    external dep probe (Linux/macOS/WSL)
+scripts/check-deps.ps1   external dep probe (Windows / PowerShell)
 stylua.toml              lua formatter config
 ```
 
@@ -20,7 +21,8 @@ stylua.toml              lua formatter config
 
 ```sh
 git clone <this repo> ~/.config/nvim     # or: chezmoi apply (this repo is chezmoi-managed)
-./scripts/check-deps.sh                  # verify external binaries
+./scripts/check-deps.sh                  # verify external binaries (Linux/macOS/WSL)
+pwsh ./scripts/check-deps.ps1            # verify external binaries (Windows)
 nvim                                     # lazy.nvim auto-installs plugins on first launch
 ```
 
@@ -76,7 +78,8 @@ Wired in `lua/plugins/lsp.lua`. First Neovim launch triggers install.
 | `:UseTsgo` / `:UseTsLs` | swap TypeScript LSP at runtime |
 | `:ConformInfo` | active formatter chain for current buffer |
 | `:Trouble diagnostics` | diagnostic list |
-| `./scripts/check-deps.sh` | external binary probe |
+| `./scripts/check-deps.sh` | external binary probe (Linux/macOS/WSL) |
+| `pwsh ./scripts/check-deps.ps1` | external binary probe (Windows) |
 
 ## Notes
 
