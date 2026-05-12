@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+{{- if eq .chezmoi.os "linux" }}
+set -e
+
+if [ ! -d /mnt/c ]; then
+    exit 0
+fi
+
+mkdir -p "$HOME/.local/bin"
+
+ln -sf /mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe "$HOME/.local/bin/powershell.exe"
+ln -sf /mnt/c/Windows/explorer.exe "$HOME/.local/bin/explorer.exe"
+ln -sf /mnt/c/Windows/System32/wsl.exe "$HOME/.local/bin/wsl.exe"
+ln -sf /mnt/c/Users/moise/wsl_programs/npiperelay.exe "$HOME/.local/bin/npiperelay.exe"
+{{- end }}
