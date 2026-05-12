@@ -25,8 +25,8 @@ path=(
 
 export PATH="$HOME/bin:$PATH"
 
-# Browser
-export BROWSER="/mnt/c/Program\ Files\ \(x86\)/Microsoft/Edge/Application/msedge.exe"
+# Browser (wslu's wslview routes to Windows default browser)
+export BROWSER=wslview
 
 # Bun
 export BUN_INSTALL="$HOME/.bun"
@@ -256,3 +256,9 @@ czsync() {
         chezmoi git -- push
     fi
 }
+
+# Windows clipboard → WSL screenshot bridge (Claude Code image paste)
+# https://github.com/Nailuu/wsl-screenshot-cli
+if command -v wsl-screenshot-cli >/dev/null 2>&1; then
+    wsl-screenshot-cli start --daemon --quiet >/dev/null 2>&1
+fi
