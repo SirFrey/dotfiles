@@ -137,3 +137,23 @@ vim.keymap.set({ "n" }, "<LEADER>ni", require("package-info").install, { silent 
 
 -- Install a different dependency version
 vim.keymap.set({ "n" }, "<LEADER>np", require("package-info").change_version, { silent = true, noremap = true })
+
+-- Neocodium
+vim.keymap.set("i", "<A-f>", function()
+    require("neocodeium").accept()
+end)
+vim.keymap.set("i", "<A-w>", function()
+    require("neocodeium").accept_word()
+end)
+vim.keymap.set("i", "<A-a>", function()
+    require("neocodeium").accept_line()
+end)
+vim.keymap.set("i", "<A-e>", function()
+    require("neocodeium").cycle_or_complete()
+end)
+vim.keymap.set("i", "<A-r>", function()
+    require("neocodeium").cycle_or_complete(-1)
+end)
+vim.keymap.set("i", "<A-c>", function()
+    require("neocodeium").clear()
+end)
