@@ -259,6 +259,7 @@ czsync() {
 
 # Windows clipboard → WSL screenshot bridge (Claude Code image paste)
 # https://github.com/Nailuu/wsl-screenshot-cli
+# Backgrounded + disowned — daemon spin-up was ~400ms sync per shell.
 if command -v wsl-screenshot-cli >/dev/null 2>&1; then
-    wsl-screenshot-cli start --daemon --quiet >/dev/null 2>&1
+    (wsl-screenshot-cli start --daemon --quiet >/dev/null 2>&1 &) 2>/dev/null
 fi
