@@ -21,7 +21,7 @@ return {
     config = function()
       -- Defer vim.lsp.start so root_dir resolution and client spawn run on the
       -- next event loop tick instead of blocking the main thread when a JS/TS
-      -- file is opened. Each affected server (tsgo, tailwindcss, eslint) does
+      -- file is opened. Each affected server (ts_ls, tailwindcss, eslint) does
       -- a sync filesystem walk for root markers; deferring lets the buffer
       -- render first.
       local original_lsp_start = vim.lsp.start
@@ -30,9 +30,6 @@ return {
           original_lsp_start(config, opts)
         end)
       end
-
-      -- Toggle: set vim.g.use_ts_ls = true before loading to use ts_ls instead of tsgo
-      local use_tsgo = not vim.g.use_ts_ls
 
       require("mason-lspconfig").setup({
         ensure_installed = {
@@ -49,27 +46,7 @@ return {
           "ts_ls",
           "yamlls",
         },
-        automatic_enable = {
-          exclude = use_tsgo and { "ts_ls" } or {},
-        },
       })
-
-      -- tsgo: TypeScript 7 native LSP (installed via pnpm add -g @typescript/native-preview)
-      if use_tsgo then
-        vim.lsp.enable("tsgo")
-      end
-
-      -- Quick swap commands: :UseTsgo / :UseTsLs
-      vim.api.nvim_create_user_command("UseTsgo", function()
-        vim.lsp.stop_client(vim.lsp.get_clients({ name = "ts_ls" }))
-        vim.lsp.enable("tsgo")
-        vim.notify("Switched to tsgo")
-      end, {})
-      vim.api.nvim_create_user_command("UseTsLs", function()
-        vim.lsp.stop_client(vim.lsp.get_clients({ name = "tsgo" }))
-        vim.lsp.enable("ts_ls")
-        vim.notify("Switched to ts_ls")
-      end, {})
 
       require("mason-tool-installer").setup({
         ensure_installed = {

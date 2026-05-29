@@ -94,15 +94,6 @@ vim.api.nvim_create_autocmd("LspAttach", {
     bufmap("n", "gF", vim.lsp.buf.definition, "LSP: go to definition")
   end,
 })
--- Quick TS LSP swap: :UseTsgo / :UseTsLs
-vim.api.nvim_create_user_command("UseTsgo", function()
-  vim.lsp.enable("ts_ls", false)
-  vim.lsp.enable("tsgo")
-end, {})
-vim.api.nvim_create_user_command("UseTsLs", function()
-  vim.lsp.enable("tsgo", false)
-  vim.lsp.enable("ts_ls")
-end, {})
 
 --  e.g. ~/.local/share/chezmoi/*
 vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
