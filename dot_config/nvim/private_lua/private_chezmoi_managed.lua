@@ -14,18 +14,28 @@ local function build(lines)
   return set
 end
 
--- async refresh; keeps the set fresh without blocking on every write
-function M.refresh()
+-- async refresh; keeps the set fresh without blocking. `cb` (optional) runs
+-- after the set is rebuilt, e.g. to re-render an open Oil buffer.
+function M.refresh(cb)
   if vim.fn.executable("chezmoi") == 0 then
+    if cb then
+      vim.schedule(cb)
+    end
     return
   end
   vim.system({ "chezmoi", "managed" }, { text = true }, function(obj)
     if obj.code ~= 0 then
+      if cb then
+        vim.schedule(cb)
+      end
       return
     end
     M.managed = build(vim.split(obj.stdout, "\n", { trimempty = true }))
     vim.schedule(function()
       pcall(vim.cmd, "redrawstatus")
+      if cb then
+        cb()
+      end
     end)
   end)
 end

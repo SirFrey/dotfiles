@@ -12,7 +12,15 @@ return {
     },
     keymaps = {
       ["<C-l>"] = false,
-      ["gr"] = "actions.refresh",
+      -- refresh chezmoi status first, then reload the listing so markers update
+      ["gr"] = {
+        desc = "Refresh listing + chezmoi status",
+        callback = function()
+          require("chezmoi_managed").refresh(function()
+            require("oil.actions").refresh.callback()
+          end)
+        end,
+      },
       ["<C-h>"] = false,
       ["<C-a>"] = { "actions.select", opts = { horizontal = true } },
     },
