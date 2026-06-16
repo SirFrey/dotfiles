@@ -259,7 +259,17 @@ czsync() {
 
 # Windows clipboard → WSL screenshot bridge (Claude Code image paste)
 # https://github.com/Nailuu/wsl-screenshot-cli
-# Backgrounded + disowned — daemon spin-up was ~400ms sync per shell.
-if command -v wsl-screenshot-cli >/dev/null 2>&1; then
-    (wsl-screenshot-cli start --daemon --quiet >/dev/null 2>&1 &) 2>/dev/null
-fi
+# DISABLED 2026-06-02: moved to native-Windows Claude Code, which pastes
+# clipboard images directly with Ctrl+V (no bridge needed). Leaving this
+# daemon running clobbered the Windows clipboard with a text path, breaking
+# native paste. Re-enable only if you go back to using Claude Code *inside* WSL.
+# if command -v wsl-screenshot-cli >/dev/null 2>&1; then
+#     (wsl-screenshot-cli start --daemon --quiet >/dev/null 2>&1 &) 2>/dev/null
+# fi
+
+# Report cwd to the terminal via OSC 7 so WezTerm tracks each tab's directory.
+# starship no longer emits this itself, so register our own precmd hook (zsh
+# allows multiple precmd functions, so this coexists with starship's hooks).
+_wezterm_osc7_cwd() { printf '\033]7;file://%s%s\033\\' "${HOST}" "${PWD}" }
+autoload -Uz add-zsh-hook
+add-zsh-hook precmd _wezterm_osc7_cwd
