@@ -143,6 +143,9 @@ zinit light sharkdp/bat
 zinit ice from"gh-r" as"program" bpick"*Linux_x86_64.tar.gz"
 zinit light jesseduffield/lazygit
 
+# _ZO_DOCTOR=0: Claude Code shell snapshots restore aliases but not chpwd hooks,
+# which falsely triggers zoxide's config-issue warning on every cd
+export _ZO_DOCTOR=0
 zinit ice from"gh-r" as"program" bpick"*x86_64-unknown-linux-musl.tar.gz" atload'autoload -Uz compinit && compinit -C; eval "$(zoxide init zsh)"'
 zinit light ajeetdsouza/zoxide
 
