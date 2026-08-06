@@ -1,6 +1,6 @@
 # Secrets
 [ -f ~/.secrets/opencode ] && set -a && source ~/.secrets/opencode && set +a
-
+fpath=(/home/moises/.local/share/zsh/site-functions $fpath)
 typeset -U path
 path=(
     # Homebrew (run `brew shellenv` once to ensure this is the correct path)
@@ -75,6 +75,40 @@ alias pn='pnpm'
 alias c='clear'
 alias cd='z'
 bindkey -s ^f "tmux-sessionizer\n"
+
+# AI command suggestion (Ctrl+G): natural language in buffer -> zsh command.
+# Agentic: claude may inspect cwd with read-only tools when the request
+# references files/projects/repo state. MCP/skills/settings disabled for speed.
+_ai_suggest() {
+  local q=$BUFFER
+  if [[ -z $q ]]; then
+    autoload -Uz read-from-minibuffer
+    # dynamic scope: while the minibuffer is open, these mute
+    # fast-syntax-highlighting and autosuggestions (NL text, not a command)
+    local ZSH_HIGHLIGHT_MAXLENGTH=0 ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=0
+    region_highlight=()
+    read-from-minibuffer "🤖 ask claude: " || return
+    q=$REPLY
+    [[ -z $q ]] && return
+  fi
+  zle -M "⏳ claude... (frozen ~5-20s)"
+  local cmd
+  cmd=$(command claude -p "$q" \
+    --system-prompt "You are a zsh command generator on Ubuntu WSL2 (available: eza, bat, fdfind, rg, fzf, git, pnpm, bun; prefer pnpm over npm). Reply with ONLY the raw zsh command - no markdown, no backticks, no explanation, never conversational text. If the input is not interpretable as a command request, reply exactly: # ctrl+g: describe a command. You may use your read-only tools to inspect the current directory first if the request references specific files, projects, or repo state." \
+    --model haiku --strict-mcp-config --disable-slash-commands --setting-sources "" \
+    --allowedTools 'Read,Glob,Grep,Bash(ls:*),Bash(git status:*),Bash(git log:*),Bash(git diff:*)' \
+    2>/dev/null)
+  if [[ -z $cmd ]]; then
+    zle -M "claude: no suggestion (logged in? claude -p works?)"
+    return 1
+  fi
+  BUFFER=$cmd
+  CURSOR=$#BUFFER
+  zle reset-prompt
+}
+zle -N _ai_suggest
+bindkey '^g' _ai_suggest
+bindkey -M viins '^g' _ai_suggest
 
 # ------------------------------------------------------------------------------
 # ZINIT PLUGIN MANAGER
@@ -276,3 +310,11 @@ czsync() {
 _wezterm_osc7_cwd() { printf '\033]7;file://%s%s\033\\' "${HOST}" "${PWD}" }
 autoload -Uz add-zsh-hook
 add-zsh-hook precmd _wezterm_osc7_cwd
+
+# pnpm
+export PNPM_HOME="/home/moises/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME/bin:"*) ;;
+  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
+esac
+# pnpm end
