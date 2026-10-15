@@ -74,6 +74,8 @@ alias fd='fdfind'
 alias pn='pnpm'
 alias c='clear'
 alias cd='z'
+# second Claude Code account, isolated from ~/.claude (own creds/settings/history)
+alias claude-alt='CLAUDE_CONFIG_DIR="$HOME/.claude-alt" claude'
 bindkey -s ^f "tmux-sessionizer\n"
 
 # AI command suggestion (Ctrl+G): natural language in buffer -> zsh command.
@@ -229,12 +231,22 @@ source ~/.cache/brew-shellenv.zsh
 nvim() {
      if ! pidof socat > /dev/null 2>&1; then
          [ -e /tmp/discord-ipc-0 ] && rm -f /tmp/discord-ipc-0
+         # Detach all stdio: an inherited stdout keeps `nvim | ...` pipelines
+         # open forever after nvim exits; &! disowns so zsh won't report it.
          socat UNIX-LISTEN:/tmp/discord-ipc-0,fork \
-             EXEC:"npiperelay.exe //./pipe/discord-ipc-0" 2>/dev/null &
+             EXEC:"npiperelay.exe //./pipe/discord-ipc-0" \
+             </dev/null >/dev/null 2>&1 &!
      fi
 
      command nvim "$@"
 }
+
+# Windows→WSLg clipboard image bridge: WSLg only syncs text, so terminal apps
+# (Claude Code Ctrl+V) can't see copied images via xclip and fall back to two
+# cold powershell.exe calls (~7s). The bridge makes image paste near-instant.
+if ! pgrep -f '[c]lipboard-image-bridge' > /dev/null 2>&1; then
+    "$HOME/.local/scripts/clipboard-image-bridge" </dev/null >/dev/null 2>&1 &!
+fi
 
 # Rust
 . "$HOME/.cargo/env"
@@ -311,6 +323,20 @@ _wezterm_osc7_cwd() { printf '\033]7;file://%s%s\033\\' "${HOST}" "${PWD}" }
 autoload -Uz add-zsh-hook
 add-zsh-hook precmd _wezterm_osc7_cwd
 
+# OSC 133 shell-integration marks (prompt start, command start, command end +
+# exit code). tmux 3.8 turns these into pane-command-finished events and copy
+# mode next-prompt/previous-prompt; WezTerm uses them for semantic zones.
+# The precmd must run FIRST, before starship/others overwrite $?.
+_osc133_preexec() { _osc133_running=1; printf '\033]133;C\033\\' }
+_osc133_precmd() {
+  local ret=$?
+  (( _osc133_running )) && printf '\033]133;D;%s\033\\' "$ret"
+  _osc133_running=0
+  printf '\033]133;A\033\\'
+}
+add-zsh-hook preexec _osc133_preexec
+precmd_functions=(_osc133_precmd ${precmd_functions:#_osc133_precmd})
+
 # pnpm
 export PNPM_HOME="/home/moises/.local/share/pnpm"
 case ":$PATH:" in
@@ -318,3 +344,10 @@ case ":$PATH:" in
   *) export PATH="$PNPM_HOME/bin:$PATH" ;;
 esac
 # pnpm end
+
+# claude-rs PATH start
+case "$PATH:" in
+  '/home/moises/.local/bin':*) ;;
+  *) export PATH='/home/moises/.local/bin':"$PATH" ;;
+esac
+# claude-rs PATH end

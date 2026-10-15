@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# Bridge Windows clipboard images into the WSLg X clipboard.
+#
+# WSLg only syncs TEXT between the Windows and X clipboards, so Claude Code's
+# fast xclip image-paste path never fires and it falls back to two cold
+# powershell.exe WinForms invocations (~7s per paste). This daemon keeps ONE
+# persistent powershell.exe alive (WinForms loaded once): it watches the
+# Windows clipboard sequence number and, on a new image, writes it as a
+# base64 PNG line to stdout; the loop below decodes each line into xclip,
+# which then owns the X selection with an image/png target.
+set -uo pipefail
+
+export DISPLAY="${DISPLAY:-:0}"
+command -v xclip >/dev/null 2>&1 || exit 1
+command -v powershell.exe >/dev/null 2>&1 || exit 1
+
+ps_script=$(cat <<'PSEOF'
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+Add-Type -TypeDefinition @"
+using System.Runtime.InteropServices;
+public class ClipSeq {
+    [DllImport("user32.dll")]
+    public static extern uint GetClipboardSequenceNumber();
+}
+"@
+# MaxValue forces one sync of whatever is already on the clipboard at start.
+$last = [uint32]::MaxValue
+$prev = ""
+while ($true) {
+    $seq = [ClipSeq]::GetClipboardSequenceNumber()
+    if ($seq -ne $last) {
+        $last = $seq
+        if ([System.Windows.Forms.Clipboard]::ContainsImage()) {
+            $img = [System.Windows.Forms.Clipboard]::GetImage()
+            if ($null -ne $img) {
+                $ms = New-Object System.IO.MemoryStream
+                $img.Save($ms, [System.Drawing.Imaging.ImageFormat]::Png)
+                $b64 = [Convert]::ToBase64String($ms.ToArray())
+                # Dedupe: a WSLg reverse-sync of our own xclip write bumps the
+                # sequence again; identical bytes must not re-emit (ping-pong).
+                if ($b64 -ne $prev) {
+                    $prev = $b64
+                    [Console]::Out.WriteLine($b64)
+                    [Console]::Out.Flush()
+                }
+            }
+        }
+    }
+    Start-Sleep -Milliseconds 300
+}
+PSEOF
+)
+enc=$(printf '%s' "$ps_script" | iconv -f utf-8 -t utf-16le | base64 -w0)
+
+# No tr in the pipeline: its 4KB block-buffering holds small images back
+# indefinitely. Strip the CR per-line instead.
+powershell.exe -NoProfile -NonInteractive -Sta -EncodedCommand "$enc" 2>/dev/null |
+	while IFS= read -r line; do
+		line=${line%$'\r'}
+		[ -n "$line" ] || continue
+		printf '%s' "$line" | base64 -d 2>/dev/null |
+			xclip -selection clipboard -t image/png 2>/dev/null
+	done
