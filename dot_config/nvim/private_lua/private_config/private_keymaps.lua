@@ -13,7 +13,7 @@ vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Half page up + center" })
 
 -- Remap for dealing with word wrap only in specific file types
 vim.api.nvim_create_autocmd("FileType", {
-  pattern = { "text", "markdown" },
+  pattern = { "text", "markdown", "claudeprompt" },
   callback = function()
     vim.keymap.set("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
     vim.keymap.set("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })

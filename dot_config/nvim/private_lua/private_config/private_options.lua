@@ -72,6 +72,9 @@ vim.opt.signcolumn = 'yes'
 
 vim.cmd 'autocmd BufRead,BufNewFile *.mdx set filetype=mdx'
 
+-- Claude Code's Ctrl+G editor file; see syntax/claudeprompt.vim
+vim.filetype.add { pattern = { ['claude%-prompt%-.*%.md'] = 'claudeprompt' } }
+
 vim.diagnostic.config { virtual_text = true }
 
 
