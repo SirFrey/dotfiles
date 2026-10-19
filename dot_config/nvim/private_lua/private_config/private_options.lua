@@ -4,6 +4,12 @@ vim.g.autoformat = false
 
 vim.opt.laststatus = 3
 
+-- Nvim auto-detects xclip before win32yank, and xclip only reaches Windows
+-- through WSLg's clipboard bridge, which keeps crashing.
+if vim.fn.has("wsl") == 1 then
+  vim.g.clipboard = "win32yank"
+end
+
 -- [[ Setting options ]]
 -- See `:help vim.o`
 vim.o.hlsearch = false
