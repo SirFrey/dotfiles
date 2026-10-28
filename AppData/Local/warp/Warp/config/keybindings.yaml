@@ -1,0 +1,14 @@
+---
+"editor_view:select_command": none
+"editor_view:go_to_line": none
+"terminal:toggle_hide_cli_responses": none
+"terminal:open_cli_agent_rich_input": none
+"editor_view:add_next_occurrence": none
+"editor_view:deselect_command": none
+# Ported from Windows Terminal
+"terminal:paste": ctrl-v
+"terminal:find": ctrl-shift-f
+"pane_group:add_right": alt-shift-d
+"pane_group:close_current_session": alt-q
+"workspace:activate_prev_tab": ctrl-pagedown
+"workspace:activate_next_tab": ctrl-pageup
