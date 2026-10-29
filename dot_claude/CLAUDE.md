@@ -42,6 +42,13 @@ Define technical terms the first time they appear. 3–6 sentences. Skip this fo
 - Waiting on deploys/CI/servers: `gh run watch --exit-status`, a backgrounded `until` loop, or the Monitor tool — not repeated `sleep N` calls.
 - Bulk Gmail cleanup (more than ~20 threads): don't trash one thread per call. Propose a Gmail filter or a search query I can bulk-select in the Gmail UI.
 
+# Picking from options
+
+Don't make me type selections in chat.
+- Up to 4 options per question (and up to 4 questions): use `AskUserQuestion`, with `multiSelect` when more than one can apply.
+- More than that (e.g. which of 30 leads, tickets, files or email threads to act on): don't list them in chat and ask for numbers. Publish a picker Artifact instead: a checklist with a search filter, select all/none, groups where they help, and enough context per row to decide (name, one key detail, a link). Pre-check the ones you recommend and say why on the row.
+- The picker declares the `db` capability. Its Submit button saves my selection to the artifact's database, and you read it back with `ArtifactData` when I say I'm done. Add a "Copy selection" button that copies a one-line list of IDs, as a fallback for when the database isn't available.
+
 # Performance and perceived speed
 
 Speed is a feature. Anything user-facing should load fast and feel instant. Treat these as defaults when building or changing code, not as a reason to rewrite working code unasked.
