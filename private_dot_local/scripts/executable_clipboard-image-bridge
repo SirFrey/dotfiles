@@ -5,14 +5,29 @@
 # fast xclip image-paste path never fires and it falls back to two cold
 # powershell.exe WinForms invocations (~7s per paste). This daemon keeps ONE
 # persistent powershell.exe alive (WinForms loaded once): it watches the
-# Windows clipboard sequence number and, on a new image, writes it as a
-# base64 PNG line to stdout; the loop below decodes each line into xclip,
-# which then owns the X selection with an image/png target.
+# Windows clipboard sequence number and, on a new image, saves it as a PNG
+# under %TEMP% and writes its Windows path to stdout; the loop below hands
+# that file to xclip, which then owns the X selection with an image/png
+# target. (Passing the path, not base64 data: bash `read` on a pipe goes a
+# byte at a time, so a 400KB base64 screenshot took seconds to arrive.)
+#
+# Staleness: the moment the Windows clipboard changes, powershell emits "~"
+# and we drop our xclip owner, so a paste during the encode window never gets
+# the PREVIOUS image (Claude Code falls back to reading Windows directly).
+#
+# Self-healing: the powershell.exe half can die (sleep/resume, WSL interop
+# hiccup) while its /init relay lingers, leaving this script blocked on read
+# forever — and the .zshrc pgrep guard then never restarts it. So powershell
+# emits a "." heartbeat every few seconds; if none arrives within
+# HEARTBEAT_TIMEOUT we kill it and start a fresh one. Powershell also exits on
+# its own when its stdout breaks, so no orphans pile up on the Windows side.
 set -uo pipefail
 
 export DISPLAY="${DISPLAY:-:0}"
 command -v xclip >/dev/null 2>&1 || exit 1
 command -v powershell.exe >/dev/null 2>&1 || exit 1
+
+HEARTBEAT_TIMEOUT=30
 
 ps_script=$(cat <<'PSEOF'
 Add-Type -AssemblyName System.Windows.Forms
@@ -24,28 +39,60 @@ public class ClipSeq {
     public static extern uint GetClipboardSequenceNumber();
 }
 "@
+function Emit([string]$s) {
+    # A broken pipe means the WSL side is gone: exit instead of orphaning.
+    try { [Console]::Out.WriteLine($s); [Console]::Out.Flush() } catch { exit 1 }
+}
 # MaxValue forces one sync of whatever is already on the clipboard at start.
 $last = [uint32]::MaxValue
 $prev = ""
+$sha = [System.Security.Cryptography.SHA256]::Create()
+$dir = Join-Path $env:TEMP 'wsl-clip-bridge'
+New-Item -ItemType Directory -Force -Path $dir | Out-Null
+$n = 0
+$beat = [Diagnostics.Stopwatch]::StartNew()
+# When WSL shuts down, writes to stdout can keep succeeding on the Windows side, so
+# Emit never throws and this process outlives the bridge. Watch wslhost directly.
+$parentId = (Get-CimInstance Win32_Process -Filter "ProcessId=$PID").ParentProcessId
 while ($true) {
     $seq = [ClipSeq]::GetClipboardSequenceNumber()
     if ($seq -ne $last) {
         $last = $seq
-        if ([System.Windows.Forms.Clipboard]::ContainsImage()) {
-            $img = [System.Windows.Forms.Clipboard]::GetImage()
-            if ($null -ne $img) {
-                $ms = New-Object System.IO.MemoryStream
-                $img.Save($ms, [System.Drawing.Imaging.ImageFormat]::Png)
-                $b64 = [Convert]::ToBase64String($ms.ToArray())
-                # Dedupe: a WSLg reverse-sync of our own xclip write bumps the
-                # sequence again; identical bytes must not re-emit (ping-pong).
-                if ($b64 -ne $prev) {
-                    $prev = $b64
-                    [Console]::Out.WriteLine($b64)
-                    [Console]::Out.Flush()
+        try {
+            if ([System.Windows.Forms.Clipboard]::ContainsImage()) {
+                $img = [System.Windows.Forms.Clipboard]::GetImage()
+                if ($null -ne $img) {
+                    $ms = New-Object System.IO.MemoryStream
+                    $img.Save($ms, [System.Drawing.Imaging.ImageFormat]::Png)
+                    $img.Dispose()
+                    $bytes = $ms.ToArray()
+                    $hash = [Convert]::ToBase64String($sha.ComputeHash($bytes))
+                    # Dedupe: a WSLg reverse-sync of our own xclip write bumps the
+                    # sequence again; identical bytes must not re-emit (ping-pong).
+                    if ($hash -ne $prev) {
+                        $prev = $hash
+                        # Rotate between two files so xclip never reads one we
+                        # are rewriting.
+                        $n = 1 - $n
+                        $path = Join-Path $dir "clip$n.png"
+                        [System.IO.File]::WriteAllBytes($path, $bytes)
+                        Emit $path
+                        $beat.Restart()
+                    }
                 }
+            } elseif ($prev -ne "") {
+                # Clipboard moved on to non-image content: drop the stale image.
+                $prev = ""
+                Emit "~"
             }
+        } catch {
+            # Clipboard briefly locked by another app; retry on next change.
+            $last = [uint32]::MaxValue
         }
+    }
+    if ($beat.ElapsedMilliseconds -ge 5000) {
+        if (-not (Get-Process -Id $parentId -ErrorAction SilentlyContinue)) { exit 0 }
+        Emit "."; $beat.Restart()
     }
     Start-Sleep -Milliseconds 300
 }
@@ -53,12 +100,29 @@ PSEOF
 )
 enc=$(printf '%s' "$ps_script" | iconv -f utf-8 -t utf-16le | base64 -w0)
 
-# No tr in the pipeline: its 4KB block-buffering holds small images back
-# indefinitely. Strip the CR per-line instead.
-powershell.exe -NoProfile -NonInteractive -Sta -EncodedCommand "$enc" 2>/dev/null |
-	while IFS= read -r line; do
+cleanup() { [ -n "${PS_PID:-}" ] && kill "$PS_PID" 2>/dev/null; exit 0; }
+trap cleanup INT TERM
+# Daemon: survive the launching terminal closing.
+trap '' HUP
+
+while true; do
+	coproc PS { exec powershell.exe -NoProfile -NonInteractive -Sta -EncodedCommand "$enc" 2>/dev/null; }
+	# Read straight from the coproc fd (no tr: its 4KB block-buffering holds
+	# lines back indefinitely). Strip the CR per-line instead.
+	while IFS= read -r -t "$HEARTBEAT_TIMEOUT" line <&"${PS[0]}"; do
 		line=${line%$'\r'}
-		[ -n "$line" ] || continue
-		printf '%s' "$line" | base64 -d 2>/dev/null |
-			xclip -selection clipboard -t image/png 2>/dev/null
+		case "$line" in
+		"" | .) continue ;;
+		"~") pkill -u "$USER" -xf 'xclip -selection clipboard -t image/png -i .*' ;;
+		*)
+			f=$(wslpath -u "$line" 2>/dev/null) || continue
+			xclip -selection clipboard -t image/png -i "$f" 2>/dev/null
+			;;
+		esac
 	done
+	# EOF or heartbeat timeout: tear down and restart.
+	kill "$PS_PID" 2>/dev/null
+	wait "$PS_PID" 2>/dev/null
+	unset PS_PID
+	sleep 2
+done
