@@ -2,6 +2,9 @@
 [ -f ~/.secrets/opencode ] && set -a && source ~/.secrets/opencode && set +a
 # Claude Code ignores this in settings.json env; it must come from the launching shell.
 export CLAUDE_CODE_WARN_MEMORY_FREE_GIB=1
+# windows-mcp costs ~640 MB of Windows RAM per session, so only sessions started
+# with claude-win load it (same tool names as before).
+claude-win() { claude --mcp-config "$HOME/.config/claude-mcp/windows-mcp.json" "$@"; }
 fpath=(/home/moises/.local/share/zsh/site-functions $fpath)
 typeset -U path
 path=(
