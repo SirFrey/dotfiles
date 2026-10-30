@@ -8,6 +8,7 @@
 # Tone
 
 - Write in plain English, full sentences.
+- Context first: for each ticket or decision, open with one sentence on the problem and one on what the choice changes. When resuming after a break, restate the context before asking me anything.
 
 ## Explaining changes
 After a code change, explain it in plain English for someone who didn't watch the work:
@@ -27,6 +28,7 @@ Define technical terms the first time they appear. 3–6 sentences. Skip this fo
 
 - Always apply the `stop-slop` skill to any text leaving the machine — no need to be asked.
 - Always show a draft and wait for approval before sending/posting anything external (Slack message, GitHub PR/issue/comment, email, DocuSeal). Local file edits and commits on branches don't need drafts.
+- Research: show the options with links in chat so I can pick. Tickets, Slack and docs get the verified finding plus only the path I chose, not the full option list.
 
 # Workflow defaults
 
@@ -41,6 +43,19 @@ Define technical terms the first time they appear. 3–6 sentences. Skip this fo
 - n8n: read workflows with `n8n_get_workflow` mode `structure` first, then `filtered` with `nodeNames` for the nodes you need; `full` only when editing the whole graph. Executions: `mode: "preview"`/`"error"` before `full`.
 - Waiting on deploys/CI/servers: `gh run watch --exit-status`, a backgrounded `until` loop, or the Monitor tool — not repeated `sleep N` calls.
 - Bulk Gmail cleanup (more than ~20 threads): don't trash one thread per call. Propose a Gmail filter or a search query I can bulk-select in the Gmail UI.
+
+# Getting it right the first time
+
+## Do the work
+- Before writing manual steps for me, check whether an MCP server, CLI or the browser can do it. If one can, do it and only ask for the permission. (If the needed MCP server is down, the rule under Tooling applies: ask me to fix it.)
+- Before proposing new infra, credentials, skills, CRM profiles or templates, look for an existing one (Coolify apps, n8n credentials, Zoho profiles, `~/.claude/skills`, the repo) and say what you found.
+- Prefer a permanent automatic setup over steps someone has to repeat. Assume end users (recruiters, sales) have no CLI, `gh` or GitHub access.
+- After a permission denial or auto-mode block, don't retry a variant of the same action. Ask once, with the exact command and why it's needed. Never grep `~/.secrets`, `.env` files or tokens to find credentials; source the documented env file.
+
+## Verify the real thing
+- UI changes: a passing typecheck isn't done. Run the exact command you hand me, open the page in Chrome, check it at 390px wide and in dark mode, and look at the result before saying done.
+- Production and integrations: don't assume. Read the vendor docs and check the current production state first. Test in a temporary copy that mirrors production exactly (same expressions, credentials, request shape), then confirm on a real run after deploying. In the summary, mark each assumption as verified or unverified.
+- Numbers: confirm counts from analytics or summary tools against a raw query (e.g. the API's total) before reporting them.
 
 # Picking from options
 
@@ -63,7 +78,8 @@ Speed is a feature. Anything user-facing should load fast and feel instant. Trea
 - Prefer platform features and small deps over heavy libraries. Before adding a dependency, check its bundle size and mention it if it's over ~20 KB gzipped.
 - Code-split routes and heavy components (editors, charts, maps) with dynamic imports.
 
-## UX that feels fast
+## UX
+- Mobile-first (iPhone sizes), 12-hour times, enough contrast in dark mode, and tooltips on columns or labels whose meaning isn't obvious.
 - Every interaction gets visible feedback within 100 ms: pressed/pending states on buttons, optimistic updates for actions that almost always succeed (with rollback and an error message on failure).
 - Skeletons shaped like the final content instead of spinners. Reserve space so nothing shifts when data arrives.
 - Prefetch likely next pages (on hover or viewport). Use view transitions for navigation where supported.
@@ -83,6 +99,7 @@ Speed is a feature. Anything user-facing should load fast and feel instant. Trea
 - GitHub (Resorsi-LLC org) via `gh`.
 - For tickets: Plane (pm.onpaice.com) via `resorsi-tickets` plugin — `RES` project internal, `SAP` for Saphira. Always check duplicates before creating. (GitLab `resorsi-devs/tickets` retired 2026-08.)
 - Dotfiles: chezmoi. Use `chezmoi diff` to inspect, `chezmoi apply` to deploy.
+- Browser tasks: Claude in Chrome (`mcp__claude-in-chrome__*`) on the profile where I'm logged in, and `localhost` for local apps. The Playwright `pw-*` servers were removed; don't re-add them.
 - If the task needs an MCP server that's disabled, disconnected or failing auth, stop and ask me to turn it on or fix it. Name the server and why it's needed. Don't work around it with raw API calls, scraped credentials or browser automation.
 
 ## Use the purpose-built tool
