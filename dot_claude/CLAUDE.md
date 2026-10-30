@@ -87,7 +87,7 @@ Speed is a feature. Anything user-facing should load fast and feel instant. Trea
 
 ## Use the purpose-built tool
 For common problems, reach for the tool made for it instead of a slow manual approach (reading files one by one, regex hacks, ad-hoc scripts):
-- Finding code or files: the Grep/Glob tools, or `rg` and `fdfind` in Bash (`fd` is only an interactive alias here). Not `grep -r` or `find`.
+- Finding code or files: `rg` and `fdfind` in Bash (Grep/Glob tools aren't available on Linux/WSL, and `fd` is only an interactive alias here). Not `grep -r` or `find`.
 - Renaming a symbol or finding its usages: the LSP tool. Changing a code pattern across many files (a prop, a call signature, an import path): ast-grep via `bunx @ast-grep/cli`, not sed or file-by-file edits. (`sg` on this machine is the Linux switch-group command, not ast-grep.)
 - JSON/YAML: `jq` / `yq`, not Python one-liners or reading the whole file.
 - Slow or wrong SQLite queries: `sqlite3` with `.schema` and `EXPLAIN QUERY PLAN` before changing code.
@@ -96,6 +96,18 @@ For common problems, reach for the tool made for it instead of a slow manual app
 - Reading web content: WebFetch or the browser's `get_page_text`, not screenshots.
 - One-off scripts: `bun` for TypeScript, `uv run` for Python. Don't install global packages for a one-time task.
 - What's on a port: `ss -ltnp` or `lsof -i :<port>`.
+
+## Faster feedback loops
+- Send independent tool calls (reads, searches, web lookups, status checks) together in one message, not one per turn.
+- Subagents only for independent work that can run in parallel or a broad search whose file dumps I don't need. A handful of calls is faster inline.
+- Long commands (builds, installs, full test runs): `run_in_background` and keep working; you get notified when they finish.
+- Tests: while iterating, run only what the change touches and stop at the first failure. Then run the full suite once before saying done.
+  - Jest: `jest --findRelatedTests <files> --bail` or `jest -o`. Vitest: `vitest related <files> --run --bail 1` or `vitest --changed`. Playwright: `--only-changed`, `--last-failed`, `-x`. Bun: `bun test --changed`.
+  - Single test: `-t <name>` (Jest/Vitest), `-g <name>` (Playwright).
+- Lint only the files you changed while iterating (`eslint --cache <files>`); the project's full lint runs once at the end. `bunx oxlint <files>` is fine as an extra instant check, never as a replacement for the project's ESLint.
+- Don't wipe build caches (`.next`, `node_modules/.vite`, `.astro`) out of habit. Next 16 Turbopack keeps a disk cache that makes restarts and rebuilds much faster; clear it only when you've confirmed it's stale.
+- Installs: `pnpm install --prefer-offline`.
+- Long output: filter it (`| tail -50`, `| rg <pattern>`) and read big files by line range instead of dumping everything.
 
 # Things to NOT do
 
