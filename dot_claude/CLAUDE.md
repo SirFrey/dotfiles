@@ -85,6 +85,18 @@ Speed is a feature. Anything user-facing should load fast and feel instant. Trea
 - Dotfiles: chezmoi. Use `chezmoi diff` to inspect, `chezmoi apply` to deploy.
 - If the task needs an MCP server that's disabled, disconnected or failing auth, stop and ask me to turn it on or fix it. Name the server and why it's needed. Don't work around it with raw API calls, scraped credentials or browser automation.
 
+## Use the purpose-built tool
+For common problems, reach for the tool made for it instead of a slow manual approach (reading files one by one, regex hacks, ad-hoc scripts):
+- Finding code or files: the Grep/Glob tools, or `rg` and `fdfind` in Bash (`fd` is only an interactive alias here). Not `grep -r` or `find`.
+- Renaming a symbol or finding its usages: the LSP tool. Changing a code pattern across many files (a prop, a call signature, an import path): ast-grep via `bunx @ast-grep/cli`, not sed or file-by-file edits. (`sg` on this machine is the Linux switch-group command, not ast-grep.)
+- JSON/YAML: `jq` / `yq`, not Python one-liners or reading the whole file.
+- Slow or wrong SQLite queries: `sqlite3` with `.schema` and `EXPLAIN QUERY PLAN` before changing code.
+- Unused files, exports or dependencies: `bunx knip`. Why a dependency is installed or duplicated: `pnpm why`.
+- Page speed or layout problems: chrome-devtools `performance_start_trace` / `lighthouse_audit`, not guessing from the code.
+- Reading web content: WebFetch or the browser's `get_page_text`, not screenshots.
+- One-off scripts: `bun` for TypeScript, `uv run` for Python. Don't install global packages for a one-time task.
+- What's on a port: `ss -ltnp` or `lsof -i :<port>`.
+
 # Things to NOT do
 
 - Don't use `git add -A` / `git add .` — stage files explicitly.
