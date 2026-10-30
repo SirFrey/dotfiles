@@ -94,7 +94,7 @@ Speed is a feature. Anything user-facing should load fast and feel instant. Trea
 
 # Tooling preferences
 
-- Typecheck: the project's `typecheck` script if it has one, else `pnpm tsc --noEmit`. dualhook, platform and whatsapp-ai-bot alias `tsc` to TypeScript 7 (tsgo); keep `typescript` itself on 5/6 for eslint/next/astro. Global `tsgo --noEmit` for ad-hoc checks. Astro projects: `astro check` (tsgo can't read .astro).
+- Typecheck: the project's `typecheck` script if it has one, else `pnpm exec tsc --noEmit`. The TypeScript version differs per repo (only dualhook's `viewer/` uses TypeScript 7 via `tsgo` on main; platform and whatsapp-ai-bot are on 5), so follow the repo's CLAUDE.md. Where a repo uses TypeScript 7, keep the `typescript` package itself on 5/6 for eslint/next/astro. Global `tsgo --noEmit` for ad-hoc checks. Astro projects: `astro check` (tsgo can't read .astro).
 - Package mgmt: pnpm primary, bun for new things.
 - GitHub (Resorsi-LLC org) via `gh`.
 - For tickets: Plane (pm.onpaice.com) via `resorsi-tickets` plugin — `RES` project internal, `SAP` for Saphira. Always check duplicates before creating. (GitLab `resorsi-devs/tickets` retired 2026-08.)
