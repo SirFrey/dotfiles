@@ -39,7 +39,13 @@ Define technical terms the first time they appear. 3–6 sentences. Skip this fo
 - For multi-step work: write a plan first, execute via `superpowers:executing-plans`.
 - Don't ask clarifying questions for reversible local choices — state the assumption and proceed. Reserve questions for destructive actions and external sends.
 - For long-running subagents, report what each agent is doing when spawning it and summarize its result when it finishes.
-- Before starting a dev server, check if the project already runs on a port (`ss -ltnp`, then match the process cwd). If it does, reuse that URL — never start a second instance on another port. Need a restart (env/config change)? Ask first.
+- Dev servers and other long-running processes (workers, watchers, tunnels) run in a tmux pane I can see, not with `run_in_background`:
+  1. First check if the project already runs on a port (`ss -ltnp`, then match the process cwd). If it does, reuse that URL — never start a second instance on another port. Need a restart (env/config change)? Ask first.
+  2. Pick a pane in Claude's own window: `tmux list-panes -t "$TMUX_PANE" -F '#{pane_id} #{pane_current_command}'`. Reuse one (not `$TMUX_PANE`) whose command is a bare shell (`zsh`/`bash`). Never send keys to a pane running anything else (Claude, nvim, another server) or to panes in other windows.
+  3. No idle pane: `tmux split-window -d -t "$TMUX_PANE" -c <project dir> -P -F '#{pane_id}'` (`-d` keeps focus on Claude).
+  4. Start with `tmux send-keys -t <pane> '<command>' Enter`. Wait for the port with a backgrounded `until curl` loop or Monitor, and read logs with `tmux capture-pane -p -t <pane> -S -100`. Tell me which pane it's in.
+  5. Stop with `tmux send-keys -t <pane> C-c` and leave the pane open.
+  - Not inside tmux (`$TMUX` unset): fall back to `run_in_background`.
 - n8n: read workflows with `n8n_get_workflow` mode `structure` first, then `filtered` with `nodeNames` for the nodes you need; `full` only when editing the whole graph. Executions: `mode: "preview"`/`"error"` before `full`.
 - Waiting on deploys/CI/servers: `gh run watch --exit-status`, a backgrounded `until` loop, or the Monitor tool — not repeated `sleep N` calls.
 - Bulk Gmail cleanup (more than ~20 threads): don't trash one thread per call. Propose a Gmail filter or a search query I can bulk-select in the Gmail UI.
