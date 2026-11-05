@@ -109,6 +109,15 @@ return {
       -- candidates and priority order, probed in parallel off the main thread.
       local tsc_bin = {} ---@type table<string, string|false>
       local tsc_waiting = {} ---@type table<string, fun(root: string)[]>
+      -- The chosen binary per project is cached across sessions so tsc starts
+      -- right away next time (the probe gates startup: ~170ms in the platform
+      -- repo, where TS 5's tsc runs through node). Re-probed in the background
+      -- each session, so upgrading a project to TS 7 is picked up next launch.
+      local cache_file = vim.fn.stdpath("state") .. "/tsc_bin.json"
+      local disk = {} ---@type table<string, string>
+      pcall(function()
+        disk = vim.json.decode(table.concat(vim.fn.readfile(cache_file), "\n")) or {}
+      end)
       local function probe_tsc(root)
         local cands = {}
         for _, name in ipairs({ "tsc", "tsgo" }) do
@@ -120,10 +129,14 @@ return {
         end
         local function finish(bin)
           tsc_bin[root] = bin or false
+          if bin and disk[root] ~= bin then
+            disk[root] = bin
+            pcall(vim.fn.writefile, { vim.json.encode(disk) }, cache_file)
+          end
           if not bin then
             vim.notify("tsc: no binary supporting `--lsp` found (requires TypeScript 7.0+)", vim.log.levels.WARN)
           end
-          for _, on_dir in ipairs(tsc_waiting[root]) do
+          for _, on_dir in ipairs(tsc_waiting[root] or {}) do
             if bin then
               on_dir(root)
             end
@@ -178,6 +191,13 @@ return {
           end
           if tsc_waiting[root] then
             table.insert(tsc_waiting[root], on_dir)
+            return
+          end
+          local cached = disk[root]
+          if cached and vim.fn.executable(cached) == 1 then
+            tsc_bin[root] = cached
+            on_dir(root)
+            probe_tsc(root) -- refresh the cache in the background
             return
           end
           tsc_waiting[root] = { on_dir }

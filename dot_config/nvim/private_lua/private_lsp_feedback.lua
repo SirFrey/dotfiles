@@ -71,12 +71,50 @@ local pending = {}
 -- labels whose next request was already waiting on server start: show at once
 local show_now = {}
 
+-- A server that is reporting progress (tsc "Loading project", lua_ls "Loading
+-- workspace") or attached in the last few seconds answers slowly, so skip the
+-- 200ms anti-flicker delay for it: the first K right after opening a file shows
+-- "waiting for tsc (still loading)" at once instead of after a pause.
+local group = vim.api.nvim_create_augroup("LspFeedback", { clear = true })
+local busy = {} ---@type table<integer, table<any, true>> client_id -> active progress tokens
+local attached_at = {} ---@type table<integer, integer>
+vim.api.nvim_create_autocmd("LspProgress", {
+  group = group,
+  callback = function(ev)
+    local params = ev.data.params or {}
+    local kind = params.value and params.value.kind
+    local tokens = busy[ev.data.client_id] or {}
+    busy[ev.data.client_id] = tokens
+    if kind == "begin" then
+      tokens[params.token] = true
+    elseif kind == "end" then
+      tokens[params.token] = nil
+    end
+  end,
+})
+vim.api.nvim_create_autocmd("LspAttach", {
+  group = group,
+  callback = function(ev)
+    attached_at[ev.data.client_id] = attached_at[ev.data.client_id] or vim.uv.now()
+  end,
+})
+local function loading(client_id)
+  return next(busy[client_id] or {}) ~= nil
+end
+local function likely_slow(client_id)
+  return loading(client_id) or (attached_at[client_id] ~= nil and vim.uv.now() - attached_at[client_id] < 5000)
+end
+
 local function annote_for(p)
-  return "waiting for " .. table.concat(vim.tbl_keys(p.clients), ", ")
+  local names = {}
+  for name, id in pairs(p.clients) do
+    names[#names + 1] = name .. ((type(id) == "number" and loading(id)) and " (still loading)" or "")
+  end
+  return "waiting for " .. table.concat(names, ", ")
 end
 
 vim.api.nvim_create_autocmd("LspRequest", {
-  group = vim.api.nvim_create_augroup("LspFeedback", { clear = true }),
+  group = group,
   callback = function(ev)
     local req = ev.data.request
     local label = labels[req.method]
@@ -90,8 +128,8 @@ vim.api.nvim_create_autocmd("LspRequest", {
       pending[label] = p
       p.count = p.count + 1
       p.ids[key] = true
-      p.clients[client and client.name or "server"] = true
-      if show_now[label] and not p.shown then
+      p.clients[client and client.name or "server"] = ev.data.client_id
+      if (show_now[label] or likely_slow(ev.data.client_id)) and not p.shown then
         show_now[label] = nil
         p.shown = true
         show(label, label, annote_for(p))
