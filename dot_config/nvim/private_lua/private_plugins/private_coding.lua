@@ -55,7 +55,7 @@ return {
       -- The first buffer of a language pays for compiling its queries, which is
       -- slow for big grammars (~200ms for TypeScript: injections + highlights;
       -- parsing itself is ~13ms). That first start waits until no key has
-      -- been pressed for 'updatetime', so the freeze lands while you're idle;
+      -- been pressed for 600ms, so the freeze lands while you're idle;
       -- regex syntax highlights the buffer meanwhile. Once a language is
       -- compiled, later buffers start on the next tick as before.
       -- (lua/idle.lua; CursorHold can't be used: it never fires before the first keypress.)
@@ -86,9 +86,11 @@ return {
               start(ev.buf)
             end)
           else
+            -- 600ms without a key: long enough that this ~100ms compile rarely
+            -- lands on the first key you press after opening a file
             require("idle").run(function()
               start(ev.buf)
-            end, vim.o.updatetime)
+            end, 600)
           end
         end,
       })

@@ -1,6 +1,7 @@
 -- Keymaps for better default experience
 -- See `:help vim.keymap.set()`
-vim.keymap.set("n", "<leader>pv", vim.cmd.Ex, { desc = "Netrw: file explorer" })
+-- netrw is disabled (oil replaces it), so :Ex no longer exists
+vim.keymap.set("n", "<leader>pv", "<cmd>Oil<cr>", { desc = "Oil: file explorer" })
 vim.keymap.set({ "n", "v" }, "<Space>", "<Nop>", { silent = true })
 vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv", { desc = "Move selection down" })
 vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv", { desc = "Move selection up" })
@@ -72,7 +73,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
   callback = function(ev)
     -- Buffer local mappings.
     -- See `:help vim.lsp.*` for documentation on any of the below functions
-    -- NOTE: gd (definition) and K (hover) are built-in defaults in Neovim 0.11
+    -- K, gd, gf/gF and the gr* keys are set globally below (they wait for the server)
     local function bufmap(mode, lhs, rhs, desc)
       vim.keymap.set(mode, lhs, rhs, { buffer = ev.buf, desc = desc })
     end
@@ -82,29 +83,92 @@ vim.api.nvim_create_autocmd("LspAttach", {
     bufmap("n", "<space>wl", function()
       print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
     end, "LSP: list workspace folders")
-    bufmap("n", "<space>rn", vim.lsp.buf.rename, "LSP: rename")
-    bufmap({ "n", "v" }, "<space>ca", vim.lsp.buf.code_action, "LSP: code action")
+    bufmap("v", "<space>ca", vim.lsp.buf.code_action, "LSP: code action")
     -- grr = references, grn = rename, gra = code action, gri = implementation,
     -- grt = type definition, grx = codelens are all built-in since 0.11/0.12
     bufmap("n", "<space>f", function()
-      require("conform").format({ async = true })
+      require("lsp_feedback").format()
     end, "Format buffer")
-    -- gf/gF -> LSP definition so imports with aliases (@/) and missing extensions resolve correctly
-    bufmap("n", "gf", vim.lsp.buf.definition, "LSP: go to definition")
-    bufmap("n", "gF", vim.lsp.buf.definition, "LSP: go to definition")
   end,
 })
 
---  e.g. ~/.local/share/chezmoi/*
-vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
-    pattern = { vim.fn.expand("~") .. "/.local/share/chezmoi/*" },
-    callback = function(ev)
-        local bufnr = ev.buf
-        local edit_watch = function()
-            require("chezmoi.commands.__edit").watch(bufnr)
-        end
-        vim.schedule(edit_watch)
-    end,
+-- LSP keys that also work before the server has attached: they wait for it
+-- with a visible message (lua/lsp_feedback.lua) instead of failing, or, for K,
+-- running :Man on a TypeScript symbol. Slow replies show a spinner too.
+-- run a built-in normal-mode key; report its error as one line, not a Lua traceback
+local function normal(keys)
+  return function()
+    local ok, err = pcall(vim.cmd, "normal! " .. keys)
+    if not ok then
+      err = tostring(err)
+      vim.notify(err:match("Vim:(.*)$") or err:match("(E%d+:.*)$") or err, vim.log.levels.WARN)
+    end
+  end
+end
+local function lsp_key(lhs, method, action, desc, fallback)
+  vim.keymap.set("n", lhs, function()
+    require("lsp_feedback").with_client(method, action, fallback)
+  end, { desc = desc })
+end
+-- no language server for this file: plain K (keywordprg, e.g. :help in vim files)
+lsp_key("K", "textDocument/hover", function() vim.lsp.buf.hover() end, "LSP: hover", normal("K"))
+lsp_key("grr", "textDocument/references", function() vim.lsp.buf.references() end, "LSP: references")
+lsp_key("gri", "textDocument/implementation", function() vim.lsp.buf.implementation() end, "LSP: implementation")
+lsp_key("grt", "textDocument/typeDefinition", function() vim.lsp.buf.type_definition() end, "LSP: type definition")
+lsp_key("grn", "textDocument/rename", function() vim.lsp.buf.rename() end, "LSP: rename")
+lsp_key("gra", "textDocument/codeAction", function() vim.lsp.buf.code_action() end, "LSP: code action")
+lsp_key("gO", "textDocument/documentSymbol", function() vim.lsp.buf.document_symbol() end, "LSP: document symbols")
+lsp_key("<space>rn", "textDocument/rename", function() vim.lsp.buf.rename() end, "LSP: rename")
+lsp_key("<space>ca", "textDocument/codeAction", function() vim.lsp.buf.code_action() end, "LSP: code action")
+-- gf/gF -> LSP definition so imports with aliases (@/) and missing extensions resolve;
+-- plain Vim gf/gF in files without a language server
+lsp_key("gf", "textDocument/definition", function() vim.lsp.buf.definition() end, "LSP: go to definition", normal("gf"))
+lsp_key("gF", "textDocument/definition", function() vim.lsp.buf.definition() end, "LSP: go to definition", normal("gF"))
+-- gd: stock nvim keeps Vim's text-search "local declaration" even with an LSP attached
+lsp_key("gd", "textDocument/definition", function() vim.lsp.buf.definition() end, "LSP: go to definition", normal("gd"))
+
+-- gx (vim.ui.open): on WSL xdg-open takes a second or more to hand the URL to
+-- Windows with nothing on screen meanwhile; show what's being opened until it has.
+local ui_open = vim.ui.open
+vim.ui.open = function(path, opt)
+  local obj, err = ui_open(path, opt)
+  if obj then
+    local target = #path > 60 and (path:sub(1, 57) .. "...") or path
+    require("lsp_feedback").until_done("Opening", target, function()
+      return obj:is_closing()
+    end)
+  end
+  return obj, err
+end
+
+-- Saving a file in the chezmoi source dir (~/.local/share/chezmoi/*) applies
+-- it to its target. chezmoi.nvim's watch did this with blocking calls (a
+-- freeze on open and on every save); this runs `chezmoi apply` in the
+-- background with a spinner and reports the result.
+local chezmoi_ignore = { "^run_onchange_", "^run_once_", "^run_after_", "^run_before_", "^%.chezmoi" }
+vim.api.nvim_create_autocmd("BufWritePost", {
+  pattern = vim.fn.expand("~") .. "/.local/share/chezmoi/*",
+  callback = function(ev)
+    local file = vim.api.nvim_buf_get_name(ev.buf)
+    local name = vim.fn.fnamemodify(file, ":t")
+    for _, pat in ipairs(chezmoi_ignore) do
+      if name:match(pat) then
+        return
+      end
+    end
+    require("lsp_feedback").run("chezmoi apply", name, { "chezmoi", "apply", "--source-path", file }, {
+      done_msg = "chezmoi: applied " .. name,
+      -- files in the source dir that don't map to a target (README, .git, ...)
+      quiet_error = function(stderr)
+        return stderr:find("not in source state") ~= nil or stderr:find("not managed") ~= nil
+      end,
+      on_done = function()
+        pcall(function()
+          require("chezmoi_managed").refresh()
+        end)
+      end,
+    })
+  end,
 })
 
 -- package.json

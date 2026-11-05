@@ -4,7 +4,7 @@ return {
   cmd = 'ConformInfo',
   event = 'BufWritePre',
   keys = {
-    { '<space>f', function() require('conform').format({ async = true }) end, desc = 'Format buffer (Conform)' },
+    { '<space>f', function() require('lsp_feedback').format() end, desc = 'Format buffer (Conform)' },
   },
   opts = {
     formatters_by_ft = {

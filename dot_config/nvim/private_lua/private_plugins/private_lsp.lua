@@ -38,6 +38,8 @@ return {
       -- file is opened. Each affected server (ts_ls, tailwindcss, eslint) does
       -- a sync filesystem walk for root markers; deferring lets the buffer
       -- render first.
+      require("lsp_feedback") -- spinner for slow LSP replies (hover, definition, ...)
+
       local original_lsp_start = vim.lsp.start
       vim.lsp.start = function(config, opts)
         vim.schedule(function()

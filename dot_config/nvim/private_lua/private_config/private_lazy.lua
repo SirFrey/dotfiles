@@ -29,9 +29,11 @@ require("lazy").setup({
   },
   install = { colorscheme = { "tokyonight", "habamax" } },
   checker = {
-    enabled = true, -- check for plugin updates periodically
+    -- started below on a 2s pause instead: its startup check runs `git` for
+    -- every version-pinned plugin and waits on each (~200ms, keys ignored)
+    enabled = false,
     notify = false, -- notify on update
-  }, -- automatically check for plugin updates
+  },
   performance = {
     rtp = {
       -- unused built-ins; oil replaces netrw, and gx is native (vim.ui.open) since 0.10
@@ -47,9 +49,21 @@ vim.api.nvim_create_autocmd("User", {
   pattern = "VeryLazy",
   once = true,
   callback = function()
+    -- one plugin per idle tick: loading them all in one tick froze ~80ms, long
+    -- enough to delay the first key pressed right after opening a file
+    for name, plugin in pairs(require("lazy.core.config").plugins) do
+      local ev = type(plugin.event) == "string" and { plugin.event } or plugin.event or {}
+      if vim.tbl_contains(ev, "User IdleLoad") then
+        require("idle").run(function()
+          require("lazy").load({ plugins = { name } })
+        end)
+      end
+    end
+    -- plugin update checker (see `checker` above)
     require("idle").run(function()
-      vim.api.nvim_exec_autocmds("User", { pattern = "IdleLoad" })
-    end)
+      require("lazy.core.config").options.checker.enabled = true
+      require("lazy.manage.checker").start()
+    end, 2000)
     -- Insert-mode plugins keep `event = "InsertEnter"` as a fallback, but load
     -- here on a pause, one per tick: loading all of them on the first
     -- keystroke in insert mode froze typing for ~70ms.
