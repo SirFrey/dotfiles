@@ -2,7 +2,25 @@ return {
   {
     "stevearc/oil.nvim",
     cmd = "Oil",
-    lazy = false,
+    -- Loaded at startup only when nvim opens a directory (`nvim .`); otherwise
+    -- on `-`, :Oil, or entering a directory buffer (init below). Saves ~7ms of
+    -- startup on every file open. Oil's setup takes over a directory buffer
+    -- that is already open, so loading it late still opens the oil view.
+    lazy = vim.fn.argc(-1) == 0 or vim.fn.isdirectory(vim.fn.argv(0)) == 0,
+    init = function()
+      vim.api.nvim_create_autocmd("BufEnter", {
+        group = vim.api.nvim_create_augroup("OilLazyLoad", { clear = true }),
+        callback = function(ev)
+          if package.loaded["oil"] then
+            return true -- oil now handles directories itself; drop this autocmd
+          end
+          if vim.fn.isdirectory(ev.file) == 1 then
+            require("lazy").load({ plugins = { "oil.nvim" } })
+            return true
+          end
+        end,
+      })
+    end,
     keys = {
       { "-", "<CMD>Oil<CR>", desc = "Open parent directory" },
     },
@@ -77,6 +95,7 @@ return {
     -- Optional dependencies
     dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function(_, opts)
+      require("chezmoi_managed") -- kick off the async chezmoi lookup while the rest of startup runs
       vim.api.nvim_set_hl(0, "OilChezmoi", { fg = "#8aadf4", bold = true, default = true })
       vim.api.nvim_set_hl(0, "OilChezmoiDirty", { fg = "#f5a97f", bold = true, default = true })
 

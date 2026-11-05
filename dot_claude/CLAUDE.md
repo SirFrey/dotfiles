@@ -24,6 +24,12 @@ Define technical terms the first time they appear. 3–6 sentences. Skip this fo
 - Don't disagree for its own sake, and skip "great idea" / "you're right" openers. When my call is fine, just do it.
 - Reversible choice: flag the concern, then go with my call. Irreversible or risky (prod DB, pushing to main, sharing a secret): stop and wait for my answer.
 
+## Terminal output I'll copy
+I read you in a ~90-column tmux pane, and Claude Code hard-wraps every line, so anything I copy picks up line breaks, indentation and table borders.
+- Never put URLs, commands, IDs, paths, keys or emails inside a table cell. Put each copyable value alone on its own line in a fenced code block.
+- Avoid markdown tables in chat. Use a short list instead; if a table is truly needed, keep it to 2–3 narrow columns with no long values.
+- Keep commands to one line when possible. Use `\` continuations instead of one very long line.
+
 # Outward-facing content (Slack, GitHub PRs/issues/comments, email, PDFs, client docs)
 
 - Always apply the `stop-slop` skill to any text leaving the machine — no need to be asked.

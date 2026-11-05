@@ -1,72 +1,57 @@
 return {
   {
-    "hrsh7th/nvim-cmp",
+    -- Replaces nvim-cmp: cmp filtered tsc's large completion lists in Lua on
+    -- every keystroke (~25ms median, up to 70ms per key in TS files). blink's
+    -- fuzzy matcher is a prebuilt Rust library, so typing stays at vi speed.
+    "saghen/blink.cmp",
+    version = "1.*", -- release tags ship the prebuilt fuzzy-matcher binary
     event = "InsertEnter",
-    dependencies = {
-      "hrsh7th/cmp-nvim-lsp",
-      "hrsh7th/cmp-nvim-lua",
-      "hrsh7th/cmp-buffer",
-      "hrsh7th/cmp-path",
-      "hrsh7th/cmp-cmdline",
-      "saadparwaiz1/cmp_luasnip",
-      "L3MON4D3/LuaSnip",
-    },
-    config = function()
-      vim.api.nvim_set_hl(0, "CmpGhostText", { link = "Comment", default = true })
-      -- Keep completion window transparent-friendly
-      vim.api.nvim_set_hl(0, "CmpNormal", { bg = "NONE" })
-      local cmp = require("cmp")
-      local lspkind = require("lspkind")
-      vim.opt.completeopt = { "menu", "menuone", "noselect" }
-      cmp.setup({
-        formatting = {
-          format = lspkind.cmp_format({
-            mode = "symbol_text", -- show only symbol annotations
-            maxwidth = {
-              menu = 50, -- leading text (labelDetails)
-              abbr = 50, -- actual suggestion item
-            },
-            ellipsis_char = "...", -- when popup menu exceed maxwidth, the truncated part would show ellipsis_char instead (must define maxwidth first)
-            show_labelDetails = true, -- show labelDetails in menu. Disabled by default
-            before = function(entry, vim_item)
-              return vim_item
-            end,
-          }),
+    dependencies = { "L3MON4D3/LuaSnip" },
+    opts = {
+      -- Same keys as the old cmp setup (preset.insert + custom maps)
+      keymap = {
+        preset = "none",
+        ["<C-Space>"] = { "show", "show_documentation", "hide_documentation" },
+        ["<C-l>"] = { "show" }, -- fallback for terminals that swallow <C-Space>
+        ["<C-e>"] = { "hide", "fallback" },
+        ["<CR>"] = { "accept", "fallback" },
+        ["<C-y>"] = { "select_and_accept", "fallback" },
+        ["<C-n>"] = { "select_next", "fallback" },
+        ["<C-p>"] = { "select_prev", "fallback" },
+        ["<Down>"] = { "select_next", "fallback" },
+        ["<Up>"] = { "select_prev", "fallback" },
+        ["<C-u>"] = { "scroll_documentation_up", "fallback" },
+        ["<C-d>"] = { "scroll_documentation_down", "fallback" },
+      },
+      snippets = { preset = "luasnip" },
+      sources = {
+        default = { "lazydev", "lsp", "snippets", "path", "buffer" },
+        providers = {
+          -- vim.* / plugin API completion in Lua files (replaces cmp-nvim-lua)
+          lazydev = { name = "LazyDev", module = "lazydev.integrations.blink", score_offset = 100 },
         },
-        snippet = {
-          expand = function(args)
-            require("luasnip").lsp_expand(args.body)
-          end,
-        },
-        window = {
-          completion = {
-            winhighlight = "Normal:CmpNormal",
+      },
+      completion = {
+        -- <CR> accepts the first item without selecting it first, like cmp's
+        -- confirm({ select = true }); nothing is inserted until accepted
+        list = { selection = { preselect = true, auto_insert = false } },
+        documentation = { auto_show = true, auto_show_delay_ms = 150 },
+        menu = {
+          -- icon + label + kind, like lspkind's "symbol_text" mode
+          draw = {
+            columns = { { "kind_icon" }, { "label", "label_description", gap = 1 }, { "kind" } },
           },
         },
-        mapping = cmp.mapping.preset.insert({
-          ["<C-u>"] = cmp.mapping.scroll_docs(-4),
-          ["<C-d>"] = cmp.mapping.scroll_docs(4),
-          ["<C-Space>"] = cmp.mapping.complete(),
-          ["<C-l>"] = cmp.mapping.complete(), -- fallback for terminals that swallow <C-Space>
-
-          ["<C-e>"] = cmp.mapping.abort(),
-          ["<CR>"] = cmp.mapping.confirm({ select = true }),
-        }),
-        sources = cmp.config.sources({
-          { name = "nvim_lsp" },
-          { name = "luasnip" },
-          { name = "nvim_lua" },
-        }, {
-          { name = "path" },
-          { name = "buffer" },
-        }),
-      })
-      cmp.event:on("menu_opened", function()
-        vim.b.copilot_suggestion_hidden = true
-      end)
-      cmp.event:on("menu_closed", function()
-        vim.b.copilot_suggestion_hidden = false
-      end)
+      },
+      -- cmp's cmdline source was installed but never set up, so `:` used the
+      -- built-in wildmenu; keep it that way
+      cmdline = { enabled = false },
+      fuzzy = { implementation = "prefer_rust_with_warning" },
+    },
+    config = function(_, opts)
+      require("blink.cmp").setup(opts)
+      -- transparent menu, as with cmp's CmpNormal
+      vim.api.nvim_set_hl(0, "BlinkCmpMenu", { bg = "NONE" })
     end,
   },
   {

@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# One previewer for fzf, fzf-tab and `img`: dirs -> eza tree, images -> chafa,
+# markdown -> glow, everything else -> bat.
+f=${1/#\~/$HOME}
+[[ -e $f ]] || { echo "not found: $f"; exit 1; }
+
+cols=${FZF_PREVIEW_COLUMNS:-$(tput cols 2>/dev/null || echo 80)}
+lines=${FZF_PREVIEW_LINES:-$(tput lines 2>/dev/null || echo 24)}
+
+# Sixel only where it renders: Windows Terminal >= 1.22, directly or through
+# tmux (tmux lists `sixel` in the client's features). Warp on Windows has no
+# image protocol, so it gets Unicode block art instead of escape-code garbage.
+image_format() {
+  if [[ -n $TMUX ]]; then
+    [[ $(tmux display -p '#{client_termfeatures}' 2>/dev/null) == *sixel* ]] && { echo sixels; return; }
+  elif [[ -n $WT_SESSION && $TERM_PROGRAM != WarpTerminal ]]; then
+    echo sixels; return
+  fi
+  echo symbols
+}
+
+if [[ -d $f ]]; then
+  eza --tree --level=2 --color=always --icons --group-directories-first "$f" | head -n 300
+  exit
+fi
+
+case "${f,,}" in
+  *.png|*.jpg|*.jpeg|*.gif|*.webp|*.bmp|*.tif|*.tiff|*.avif|*.ico|*.svg)
+    # A sixel that touches the last row scrolls the fzf preview; keep one line free.
+    if [[ -n $FZF_PREVIEW_LINES ]] && (( FZF_PREVIEW_TOP + FZF_PREVIEW_LINES == $(tput lines 2>/dev/null || echo 0) )); then
+      lines=$((lines - 1))
+    fi
+    chafa -f "$(image_format)" --animate=off --size="${cols}x${lines}" "$f"
+    ;;
+  *.md|*.markdown|*.mdx)
+    CLICOLOR_FORCE=1 glow --style=dark --width="$cols" "$f"
+    ;;
+  *)
+    if [[ $(file -b --mime-encoding -- "$f") == binary ]]; then
+      file -b -- "$f"; du -h -- "$f" | cut -f1
+    else
+      bat --color=always --style=numbers,changes --line-range=:500 --terminal-width="$cols" -- "$f"
+    fi
+    ;;
+esac

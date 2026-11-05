@@ -83,6 +83,26 @@ alias cd='z'
 alias claude-alt='CLAUDE_CONFIG_DIR="$HOME/.claude-alt" claude'
 bindkey -s ^f "tmux-sessionizer\n"
 
+# Rich previews: markdown, images (Sixel in Windows Terminal, block art in Warp),
+# file manager, and open-in-Windows. `preview` lives in ~/.local/scripts.
+alias md='glow -p'
+img() { local f; for f in "$@"; do preview "$f"; done }
+open() { wslview "${@:-.}" }
+y() {
+    local tmp cwd
+    tmp=$(mktemp -t yazi-cwd.XXXXXX)
+    yazi "$@" --cwd-file="$tmp"
+    IFS= read -r -d '' cwd < "$tmp"
+    [[ -n $cwd && $cwd != $PWD ]] && builtin cd -- "$cwd"
+    rm -f -- "$tmp"
+}
+export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+export MANROFFOPT='-c'
+export FZF_CTRL_T_COMMAND='fdfind --type f --hidden --exclude .git --strip-cwd-prefix'
+export FZF_CTRL_T_OPTS="--preview 'preview {}' --preview-window=right,60%,border-left"
+export FZF_ALT_C_COMMAND='fdfind --type d --hidden --exclude .git --strip-cwd-prefix'
+export FZF_ALT_C_OPTS="--preview 'preview {}'"
+
 # AI command suggestion (Ctrl+G): natural language in buffer -> zsh command.
 # Agentic: claude may inspect cwd with read-only tools when the request
 # references files/projects/repo state. MCP/skills/settings disabled for speed.
@@ -196,6 +216,26 @@ zinit light fastfetch-cli/fastfetch
 zinit ice from"gh-r" as"program" bpick"*x86_64-unknown-linux-gnu.tar.gz" atload'eval "$(starship init zsh)"'
 zinit light starship/starship
 
+# Preview tools are only PATH entries, so they load after the prompt (turbo).
+zinit ice wait"0" lucid from"gh-r" as"program" bpick"*Linux_x86_64.tar.gz" pick"glow*/glow"
+zinit light charmbracelet/glow
+
+zinit ice wait"0" lucid from"gh-r" as"program" bpick"*x86_64-unknown-linux-musl.tar.gz" mv"delta-*/delta -> delta"
+zinit light dandavison/delta
+
+zinit ice wait"0" lucid from"gh-r" as"program" bpick"*x86_64-unknown-linux-musl.zip" pick"yazi-*/yazi"
+zinit light sxyazi/yazi
+
+# Upstream static build: Homebrew's chafa drags in ~60 deps (cairo, python, ...).
+zinit ice wait"0" lucid as"program" id-as"chafa" extract pick"chafa*/chafa"
+zinit snippet https://hpjansson.org/chafa/releases/static/chafa-1.18.3-1-x86_64-linux-gnu.tar.gz
+
+# Ctrl-T (files) and Alt-C (dirs) pickers with previews, plus fzf Ctrl-R. Only the
+# key-bindings half: fzf's completion.zsh rebinds Tab and would clobber fzf-tab.
+zinit ice wait"0" lucid id-as"fzf-keybindings" nocd \
+    atload'source <(fzf --zsh | sed "/^### completion.zsh ###/,\$d")'
+zinit light zdharma-continuum/null
+
 ### Oh My Zsh Snippets — deferred until after prompt
 zinit wait"0" lucid for \
     OMZL::git.zsh \
@@ -210,6 +250,7 @@ zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 zstyle ':completion:*' menu no
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza --color=always --icons $realpath'
 zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza --color=always --icons $realpath'
+zstyle ':fzf-tab:complete:(nvim|v|vim|bat|cat|glow|md|img|open|less|code|y|yazi):*' fzf-preview 'preview $realpath'
 
 # ------------------------------------------------------------------------------
 # FRAMEWORK INITIALIZATIONS

@@ -1,7 +1,7 @@
 return {
   "vyfor/cord.nvim",
   build = ":Cord update",
-  event = "VeryLazy",
+  event = "User IdleLoad", -- first pause after startup (lua/idle.lua)
   config = function()
     require("cord").setup({
      -- log_level = "trace", -- one of 'trace', 'debug', 'info', 'warn', 'error'

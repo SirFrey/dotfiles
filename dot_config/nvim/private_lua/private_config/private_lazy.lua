@@ -32,4 +32,23 @@ require("lazy").setup({
     enabled = true, -- check for plugin updates periodically
     notify = false, -- notify on update
   }, -- automatically check for plugin updates
+  performance = {
+    rtp = {
+      -- unused built-ins; oil replaces netrw, and gx is native (vim.ui.open) since 0.10
+      disabled_plugins = { "gzip", "tarPlugin", "zipPlugin", "tohtml", "tutor", "netrwPlugin" },
+    },
+  },
+})
+
+-- `event = "User IdleLoad"`: plugins that don't need to be ready the instant
+-- the UI appears load on the first pause after VeryLazy (see lua/idle.lua),
+-- instead of in the same freeze as everything else right after first paint.
+vim.api.nvim_create_autocmd("User", {
+  pattern = "VeryLazy",
+  once = true,
+  callback = function()
+    require("idle").run(function()
+      vim.api.nvim_exec_autocmds("User", { pattern = "IdleLoad" })
+    end)
+  end,
 })

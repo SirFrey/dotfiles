@@ -1,0 +1,11 @@
+[mgr]
+show_hidden = true
+
+[opener]
+# xdg-open has no Windows handlers in WSL; wslview hands files to the Windows default app.
+open = [{ run = 'wslview %s1', orphan = true, desc = "Open in Windows" }]
+
+[plugin]
+prepend_previewers = [
+  { url = "*.md", run = 'piper -- CLICOLOR_FORCE=1 glow -w=$w -s=dark "$1"' },
+]

@@ -2,9 +2,9 @@
 -- Tracks two sets, keyed by absolute target path:
 --   managed -- every target chezmoi owns          (`chezmoi managed`)
 --   dirty   -- targets out of sync with the source (`chezmoi status`)
--- A dirty path is always also managed. Built synchronously on first require
--- (two ~30ms spawns, at lazy load) so the first render is correct, then
--- refreshed async after writes / on demand.
+-- A dirty path is always also managed. Built async on first require: the two
+-- chezmoi calls take ~160ms combined on WSL and used to block startup, so the
+-- markers now appear a moment after the first render instead.
 local M = {}
 
 M.managed = {}
@@ -89,11 +89,26 @@ function M.is_dirty(path)
   return M.dirty[norm(path)] == true
 end
 
--- synchronous initial build so the first statusline / Oil render is accurate
-if vim.fn.executable("chezmoi") == 1 then
-  M.managed = managed_set(vim.fn.systemlist({ "chezmoi", "managed" }))
-  M.dirty = dirty_set(vim.fn.systemlist({ "chezmoi", "status" }))
+-- Initial build: re-render visible Oil listings once data lands so the chezmoi
+-- column fills in. Skipped if any Oil buffer has unsaved edits, since a
+-- re-render would discard them (`gr` refreshes manually).
+local function initial_refresh()
+  M.refresh(function()
+    if not package.loaded["oil"] then
+      return
+    end
+    local view = require("oil.view")
+    for _, buf in ipairs(view.get_all_buffers()) do
+      if vim.bo[buf].modified then
+        return
+      end
+    end
+    view.rerender_all_oil_buffers({ refetch = false })
+  end)
 end
+-- spawning the two processes costs ~4ms on WSL: run on the first pause
+-- after startup (lua/idle.lua) instead of in the startup freeze
+require("idle").run(initial_refresh)
 vim.api.nvim_create_autocmd("BufWritePost", {
   callback = function()
     M.refresh()

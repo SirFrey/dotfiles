@@ -1,6 +1,6 @@
 return {
   "xvzc/chezmoi.nvim",
-  event = "VeryLazy",
+  event = "User IdleLoad", -- first pause after startup (lua/idle.lua)
   dependencies = { "nvim-lua/plenary.nvim" },
   config = function()
     require("chezmoi").setup({})

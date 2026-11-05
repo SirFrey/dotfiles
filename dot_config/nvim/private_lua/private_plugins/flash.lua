@@ -1,6 +1,6 @@
 return {
   "folke/flash.nvim",
-  event = "VeryLazy",
+  event = "User IdleLoad", -- first pause after startup (lua/idle.lua)
   ---@type Flash.Config
   opts = {},
   -- stylua: ignore

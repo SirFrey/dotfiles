@@ -5,9 +5,13 @@
 [init]
 	defaultBranch = main
 [core]
-	pager = 
+	# Paging stays off (as before); delta only adds syntax highlighting and line
+	# numbers. Falls back to plain output where delta isn't on PATH.
+	pager = command -v delta >/dev/null 2>&1 && exec delta --paging=never || exec cat
 [interactive]
-	diffFilter = diff-so-fancy --patch
+	diffFilter = command -v delta >/dev/null 2>&1 && exec delta --color-only || exec cat
+[delta]
+	line-numbers = true
 [color]
 	ui = true
 [color "diff-highlight"]

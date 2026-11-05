@@ -75,7 +75,17 @@ vim.cmd 'autocmd BufRead,BufNewFile *.mdx set filetype=mdx'
 -- Claude Code's Ctrl+G editor file; see syntax/claudeprompt.vim
 vim.filetype.add { pattern = { ['claude%-prompt%-.*%.md'] = 'claudeprompt' } }
 
-vim.diagnostic.config { virtual_text = true }
+-- on the first pause after startup (lua/idle.lua): requiring vim.diagnostic
+-- costs ~1.5ms, and the LSP servers that report diagnostics start later still
+vim.api.nvim_create_autocmd("User", {
+  pattern = "VeryLazy",
+  once = true,
+  callback = function()
+    require("idle").run(function()
+      vim.diagnostic.config { virtual_text = true }
+    end, 0)
+  end,
+})
 
 
 

@@ -62,8 +62,8 @@ end, { silent = true, desc = "Luasnip: change choice" })
 
 -- Global mappings.
 -- See `:help vim.diagnostic.*` for documentation on any of the below functions
-vim.keymap.set("n", "<space>e", vim.diagnostic.open_float, { desc = "Diagnostic: float" })
-vim.keymap.set("n", "<space>q", vim.diagnostic.setloclist, { desc = "Diagnostics: send to loclist" })
+vim.keymap.set("n", "<space>e", function() vim.diagnostic.open_float() end, { desc = "Diagnostic: float" })
+vim.keymap.set("n", "<space>q", function() vim.diagnostic.setloclist() end, { desc = "Diagnostics: send to loclist" })
 
 -- Use LspAttach autocommand to only map the following keys
 -- after the language server attaches to the current buffer
@@ -109,25 +109,25 @@ vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
 
 -- package.json
 -- -- Show dependency versions
-vim.keymap.set({ "n" }, "<LEADER>ns", require("package-info").show, { silent = true, noremap = true })
+vim.keymap.set({ "n" }, "<LEADER>ns", function() require("package-info").show() end, { silent = true, noremap = true })
 
 -- Hide dependency versions
-vim.keymap.set({ "n" }, "<LEADER>nc", require("package-info").hide, { silent = true, noremap = true })
+vim.keymap.set({ "n" }, "<LEADER>nc", function() require("package-info").hide() end, { silent = true, noremap = true })
 
 -- Toggle dependency versions
-vim.keymap.set({ "n" }, "<LEADER>nt", require("package-info").toggle, { silent = true, noremap = true })
+vim.keymap.set({ "n" }, "<LEADER>nt", function() require("package-info").toggle() end, { silent = true, noremap = true })
 
 -- Update dependency on the line
-vim.keymap.set({ "n" }, "<LEADER>nu", require("package-info").update, { silent = true, noremap = true })
+vim.keymap.set({ "n" }, "<LEADER>nu", function() require("package-info").update() end, { silent = true, noremap = true })
 
 -- Delete dependency on the line
-vim.keymap.set({ "n" }, "<LEADER>nd", require("package-info").delete, { silent = true, noremap = true })
+vim.keymap.set({ "n" }, "<LEADER>nd", function() require("package-info").delete() end, { silent = true, noremap = true })
 
 -- Install a new dependency
-vim.keymap.set({ "n" }, "<LEADER>ni", require("package-info").install, { silent = true, noremap = true })
+vim.keymap.set({ "n" }, "<LEADER>ni", function() require("package-info").install() end, { silent = true, noremap = true })
 
 -- Install a different dependency version
-vim.keymap.set({ "n" }, "<LEADER>np", require("package-info").change_version, { silent = true, noremap = true })
+vim.keymap.set({ "n" }, "<LEADER>np", function() require("package-info").change_version() end, { silent = true, noremap = true })
 
 -- Neocodium
 vim.keymap.set("i", "<A-f>", function()

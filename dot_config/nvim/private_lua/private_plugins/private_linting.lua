@@ -20,7 +20,10 @@ return {
     vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {
       group = lint_augroup,
       callback = function()
-        lint.try_lint()
+        -- next tick: spawning eslint_d inside BufEnter delays the first paint
+        vim.schedule(function()
+          lint.try_lint()
+        end)
       end,
     })
 
