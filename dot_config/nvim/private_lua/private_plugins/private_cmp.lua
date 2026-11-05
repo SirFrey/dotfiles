@@ -29,6 +29,27 @@ return {
         providers = {
           -- vim.* / plugin API completion in Lua files (replaces cmp-nvim-lua)
           lazydev = { name = "LazyDev", module = "lazydev.integrations.blink", score_offset = 100 },
+          lsp = {
+            override = {
+              -- tsc answers a 1-character word with every auto-import candidate
+              -- (18k items / 7MB in the platform repo, ~200ms to decode and
+              -- process), but from 2 characters it filters server-side (~1.7k
+              -- items / 4ms), still including auto-imports. So in TS/JS the
+              -- LSP is first asked at the 2nd character; buffer words and
+              -- snippets still show from the 1st, and `.` / <C-Space> are unaffected.
+              get_completions = function(self, ctx, callback)
+                local kind = ctx.trigger.initial_kind
+                local ft = vim.bo[ctx.bufnr].filetype
+                local js = ft:match("^javascript") or ft:match("^typescript")
+                if js and (kind == "keyword" or kind == "prefetch") and ctx.bounds.length < 2 then
+                  -- incomplete: blink asks again once the word grows
+                  callback({ items = {}, is_incomplete_forward = true, is_incomplete_backward = true })
+                  return function() end
+                end
+                return self:get_completions(ctx, callback)
+              end,
+            },
+          },
         },
       },
       completion = {

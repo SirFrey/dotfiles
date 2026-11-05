@@ -50,5 +50,13 @@ vim.api.nvim_create_autocmd("User", {
     require("idle").run(function()
       vim.api.nvim_exec_autocmds("User", { pattern = "IdleLoad" })
     end)
+    -- Insert-mode plugins keep `event = "InsertEnter"` as a fallback, but load
+    -- here on a pause, one per tick: loading all of them on the first
+    -- keystroke in insert mode froze typing for ~70ms.
+    for _, name in ipairs({ "LuaSnip", "friendly-snippets", "blink.cmp", "neocodeium" }) do
+      require("idle").run(function()
+        require("lazy").load({ plugins = { name } })
+      end)
+    end
   end,
 })
