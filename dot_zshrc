@@ -81,6 +81,8 @@ alias c='clear'
 alias cd='z'
 # second Claude Code account, isolated from ~/.claude (own creds/settings/history)
 alias claude-alt='CLAUDE_CONFIG_DIR="$HOME/.claude-alt" claude'
+# n8n, mobile and GitHub MCP servers start off in every session; turn one on with /mcp.
+claude() { ~/.local/scripts/claude-mcp-defaults; command claude "$@"; }
 bindkey -s ^f "tmux-sessionizer\n"
 
 # Rich previews: markdown, images (Sixel in Windows Terminal, block art in Warp),

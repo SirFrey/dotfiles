@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Lighthouse performance audit from WSL. Lighthouse's own Chrome launcher detects WSL and tries Windows
+# paths (mkdtemp 'undefined:/Users/undefined/AppData/...'), so start headless Chrome here and hand it the port.
+# Usage: lighthouse-wsl <url> [extra lighthouse args]
+# Writes ./lighthouse-report.report.{html,json} and prints a one-line summary.
+set -euo pipefail
+url=${1:?usage: lighthouse-wsl <url> [extra lighthouse args]}; shift
+port=$((9300 + RANDOM % 600))
+profile=$(mktemp -d)
+google-chrome --headless=new --remote-debugging-port="$port" --user-data-dir="$profile" --no-first-run about:blank >/dev/null 2>&1 &
+chrome=$!
+cleanup() {
+  # Chrome's helper processes outlive the main one and keep writing to the profile; stop them all first.
+  pkill -f -- "--user-data-dir=$profile" 2>/dev/null || true
+  wait "$chrome" 2>/dev/null || true
+  for _ in $(seq 50); do pgrep -f -- "--user-data-dir=$profile" >/dev/null || break; sleep 0.1; done
+  rm -rf "$profile"
+}
+trap cleanup EXIT
+for _ in $(seq 100); do curl -s "localhost:$port/json/version" >/dev/null && break; sleep 0.1; done
+
+npx -y lighthouse@12 "$url" --port="$port" --quiet --only-categories=performance \
+  --output=json --output=html --output-path=./lighthouse-report "$@"
+
+jq -r '[
+  "score \(.categories.performance.score * 100 | round)",
+  "LCP \(.audits["largest-contentful-paint"].displayValue)",
+  "CLS \(.audits["cumulative-layout-shift"].displayValue)",
+  "TBT \(.audits["total-blocking-time"].displayValue)",
+  "FCP \(.audits["first-contentful-paint"].displayValue)"
+] | join(" · ")' ./lighthouse-report.report.json
+echo "report: $PWD/lighthouse-report.report.html"

@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Run by the zsh `claude` wrapper before every launch: marks the optional MCP servers below as disabled
+# for the current folder in .claude.json, so each session starts with them off. `/mcp` turns one on for
+# that session; the next launch turns it off again. Claude Code has no global default-off setting
+# (its /mcp toggle is stored per folder), hence this.
+set -u
+OFF='["plugin_it-product_n8n-mcp","mobile-mcp","plugin:it-product:github"]'
+CFG=${CLAUDE_CONFIG_DIR:-$HOME}/.claude.json
+DIR=$(pwd -P)
+
+[[ -f $CFG ]] || exit 0
+command -v jq >/dev/null || exit 0
+
+for _ in 1 2 3; do
+  # Nothing to add (or unreadable JSON): leave the file alone.
+  jq -e --arg d "$DIR" --argjson off "$OFF" \
+    '($off - (.projects[$d].disabledMcpServers // [])) | length > 0' "$CFG" >/dev/null 2>&1 || exit 0
+  before=$(stat -c '%Y.%s.%i' "$CFG")
+  tmp=$(mktemp "$CFG.XXXXXX") || exit 0
+  if jq --arg d "$DIR" --argjson off "$OFF" \
+      '.projects[$d] = ((.projects[$d] // {}) | .disabledMcpServers = ((.disabledMcpServers // []) + ($off - (.disabledMcpServers // []))))' \
+      "$CFG" > "$tmp" && [[ -s $tmp ]]; then
+    # Other running Claude sessions also write this file; only swap ours in if nobody wrote meanwhile.
+    if [[ $(stat -c '%Y.%s.%i' "$CFG") == "$before" ]]; then
+      chmod --reference="$CFG" "$tmp" && mv -f "$tmp" "$CFG" && exit 0
+    fi
+  fi
+  rm -f "$tmp"
+done
+exit 0

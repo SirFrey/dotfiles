@@ -101,7 +101,7 @@ Speed is a feature. Anything user-facing should load fast and feel instant. Trea
 
 ## Guardrails
 - Don't trade correctness or readability for micro-optimizations. Measure before adding complexity (cache layers, memoization, web workers) and say what you measured.
-- When a change touches page load or a hot path, report before/after numbers: bundle size, Core Web Vitals (targets: LCP < 2.5 s, INP < 200 ms, CLS < 0.1), or query time. Use the `web-perf` / `vercel-react-best-practices` skills and chrome-devtools performance traces where relevant.
+- When a change touches page load or a hot path, report before/after numbers: bundle size, Core Web Vitals (targets: LCP < 2.5 s, INP < 200 ms, CLS < 0.1), or query time. Use `lighthouse-wsl <url>` for page-load numbers and the `vercel-react-best-practices` skill where relevant.
 - If you notice an existing slow spot outside the task, flag it in one line instead of fixing it unasked.
 
 # Tooling preferences
@@ -121,7 +121,7 @@ For common problems, reach for the tool made for it instead of a slow manual app
 - JSON/YAML: `jq` / `yq`, not Python one-liners or reading the whole file.
 - Slow or wrong SQLite queries: `sqlite3` with `.schema` and `EXPLAIN QUERY PLAN` before changing code.
 - Unused files, exports or dependencies: `bunx knip`. Why a dependency is installed or duplicated: `pnpm why`.
-- Page speed or layout problems: chrome-devtools `performance_start_trace` / `lighthouse_audit`, not guessing from the code.
+- Page speed problems: `lighthouse-wsl <url>` (in `~/.local/scripts`; plain `lighthouse` can't launch Chrome under WSL). Layout problems: look at the page with Claude in Chrome. Not guessing from the code.
 - Reading web content: WebFetch or the browser's `get_page_text`, not screenshots.
 - One-off scripts: `bun` for TypeScript, `uv run` for Python. Don't install global packages for a one-time task.
 - What's on a port: `ss -ltnp` or `lsof -i :<port>`.
