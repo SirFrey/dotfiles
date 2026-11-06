@@ -1,0 +1,11 @@
+[Unit]
+Description=Windows toast when earlyoom kills a process
+After=default.target
+
+[Service]
+ExecStart=%h/.local/scripts/earlyoom-notify
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

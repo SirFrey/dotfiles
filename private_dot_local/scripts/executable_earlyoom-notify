@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+# Windows toast, in plain words, for every process earlyoom closes. Runs as earlyoom-notify.service (user unit).
+#   earlyoom-notify           follow the earlyoom journal
+#   earlyoom-notify --stdin   read earlyoom lines from stdin (testing)
+# EARLYOOM_NOTIFY_DRYRUN=1 prints "title | line2 | line3" instead of showing a toast.
+# EARLYOOM_NOTIFY_PROC overrides /proc (tests use a fake one).
+set -u
+PS=/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe
+PROC=${EARLYOOM_NOTIFY_PROC:-/proc}
+
+toast() {
+  if [[ -n ${EARLYOOM_NOTIFY_DRYRUN:-} ]]; then printf '%s | %s | %s\n' "$1" "$2" "$3"; return; fi
+  # Text goes through env vars (WSLENV) and CreateTextNode so process names can't break the XML or the command.
+  # No /u flag: WSL 2.7.3 drops /u-flagged vars instead of passing them.
+  # Sent as Windows Terminal: the Windows PowerShell app ID lands in history without a pop-up on build 26300.
+  EO_1=$1 EO_2=$2 EO_3=$3 WSLENV=EO_1:EO_2:EO_3 "$PS" -NoProfile -NonInteractive -Command '
+    [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > $null
+    [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] > $null
+    $x = New-Object Windows.Data.Xml.Dom.XmlDocument
+    $x.LoadXml("<toast><visual><binding template=""ToastGeneric""><text/><text/><text/></binding></visual></toast>")
+    $t = $x.GetElementsByTagName("text")
+    $t.Item(0).AppendChild($x.CreateTextNode($env:EO_1)) > $null
+    $t.Item(1).AppendChild($x.CreateTextNode($env:EO_2)) > $null
+    $t.Item(2).AppendChild($x.CreateTextNode($env:EO_3)) > $null
+    $n = [Windows.UI.Notifications.ToastNotification]::new($x)
+    $n.Group = "earlyoom"
+    $n.Tag = [string][DateTimeOffset]::Now.ToUnixTimeMilliseconds()
+    [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("Microsoft.WindowsTerminal_8wekyb3d8bbwe!App").Show($n)
+  ' >/dev/null 2>&1
+}
+
+# Sets $label and $action from the systemd unit, earlyoom's process name and the command line.
+describe() { # $1 unit, $2 name, $3 cmdline
+  local unit=$1 name=$2 cmd=$3 m
+  action="Run it again when you need it."
+  case $unit in
+    n8n-mcp.service)   label="Claude's n8n tools";   action="It restarts by itself. Nothing to do."; return ;;
+    plane-mcp.service) label="Claude's Plane tools"; action="It restarts by itself. Nothing to do."; return ;;
+    ?*)                label="the background service ${unit%.service}"; action="Check it with: systemctl --user status ${unit%.service}"; return ;;
+  esac
+  if [[ $cmd == *.codeium/* ]]; then
+    label="Codeium autocomplete (Neovim)"; action="Neovim restarts it on its own."
+  elif [[ $cmd =~ /mason/(bin|packages)/([A-Za-z0-9_.-]+) ]] || [[ $cmd =~ ()([A-Za-z0-9_.-]+-language-server) ]]; then
+    m=${BASH_REMATCH[2]}; m=${m%-language-server}; m=${m%-ls}; [[ $m == tsc ]] && m=typescript
+    label="a Neovim code helper ($m)"; action="Neovim restarts it, or run :LspRestart."
+  elif [[ $cmd =~ (^|/)(mcp-server-[A-Za-z0-9_-]+|[A-Za-z0-9_-]+-mcp(-server)?)([ @/]|$) ]]; then
+    m=${BASH_REMATCH[2]}; m=${m#mcp-server-}; m=${m%-server}; m=${m%-mcp}
+    label="a Claude tool server ($m)"; action="If Claude's $m tools stop working, type /mcp in that session to reconnect."
+  elif [[ $cmd =~ (^|/)(next|vite|astro|nuxt|remix|wrangler)\ (dev|serve|start) ]] || [[ $name == next-server* ]]; then
+    m=${BASH_REMATCH[2]:-next}
+    label="a dev server ($m)"; action="Restart it in its tmux pane."
+  elif [[ $cmd =~ (^|/)(tsc|tsgo|vue-tsc|astro\ check) ]] || [[ $name =~ ^(tsc|tsgo)$ ]]; then
+    label="a TypeScript type-check"
+  elif [[ $name == claude || $cmd =~ (^|/)claude( |$) ]]; then
+    label="a Claude Code session"; action="Reopen it with: claude --resume"
+  elif [[ $name == nvim ]]; then
+    label="Neovim"; action="Reopen the file; unsaved edits are in Neovim's swap file."
+  elif [[ $name =~ ^(chrome|chromium) ]]; then
+    label="a headless Chrome (browser automation)"
+  elif [[ $cmd =~ ^[^\ ]*(node|bun|python3?)\ ([^\ ]+) ]]; then
+    m=${BASH_REMATCH[2]##*/}
+    label="a ${BASH_REMATCH[1]} script ($m)"
+  elif [[ $name == MainThread ]]; then
+    label="a Node.js background process (probably a Claude tool server or editor helper)"
+  else
+    label=$name
+  fi
+}
+
+mb() { (( $1 >= 1024 )) && awk -v m="$1" 'BEGIN { printf "%.1f GB", m / 1024 }' || printf '%s MB' "$1"; }
+
+re='sending (SIGTERM|SIGKILL) to process ([0-9]+) uid [0-9]+ "([^"]*)": badness -?[0-9]+, VmRSS ([0-9]+) MiB'
+last_pid=
+handle() {
+  local label action
+  while IFS= read -r line; do
+    [[ $line =~ $re ]] || continue
+    local pid=${BASH_REMATCH[2]} name=${BASH_REMATCH[3]} rss=${BASH_REMATCH[4]}
+    # earlyoom escalates TERM -> KILL on the same pid; one toast is enough.
+    [[ $pid == "$last_pid" ]] && continue
+    last_pid=$pid
+    # Read /proc right away, while the process is still exiting.
+    local cmd unit cwd where=
+    cmd=$(tr '\0' ' ' < "$PROC/$pid/cmdline" 2>/dev/null); cmd=${cmd% }
+    unit=$(sed -n 's#^0::.*/\([^/]*\.service\)$#\1#p' "$PROC/$pid/cgroup" 2>/dev/null)
+    cwd=$(readlink "$PROC/$pid/cwd" 2>/dev/null)
+    [[ -n $cwd && $cwd != / && $cwd != "$HOME" ]] && where=" in ${cwd/#$HOME/\~}"
+    describe "$unit" "$name" "$cmd"
+    toast "Low memory: closed $label" "Freed $(mb "$rss")$where so WSL wouldn't freeze." "$action" &
+  done
+  wait
+}
+
+if [[ ${1:-} == --stdin ]]; then
+  handle
+else
+  journalctl -f -n 0 -o cat -t earlyoom | handle
+fi

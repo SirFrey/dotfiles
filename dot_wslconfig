@@ -1,8 +1,8 @@
 [wsl2]
 networkingMode=Mirrored
-memory=9GB
-swap=20GB
-processors=5
+memory=7GB
+swap=8GB
+processors=12
 
 [experimental]
 autoMemoryReclaim=gradual
