@@ -1,27 +1,23 @@
 {
     "$help": "https://aka.ms/terminal-documentation",
     "$schema": "https://aka.ms/terminal-profiles-schema",
-    "actions": 
-    [
+    "actions": [
         {
-            "command": 
-            {
+            "command": {
                 "action": "sendInput",
                 "input": "\u001b[13;2u"
             },
             "id": "User.sendInput.8882FD6D"
         },
         {
-            "command": 
-            {
+            "command": {
                 "action": "sendInput",
                 "input": "\u001b[32;5u"
             },
             "id": "User.sendInput.CtrlSpace"
         },
         {
-            "command": 
-            {
+            "command": {
                 "action": "copy",
                 "singleLine": false
             },
@@ -36,13 +32,26 @@
             "id": "User.find"
         },
         {
-            "command": 
-            {
+            "command": {
                 "action": "splitPane",
                 "split": "auto",
                 "splitMode": "duplicate"
             },
             "id": "User.splitPane.A6751878"
+        },
+        {
+            "iterateOn": "profiles",
+            "icon": "${profile.icon}",
+            "name": "${profile.name}",
+            "command": {
+                "action": "newTab",
+                "profile": "${profile.name}"
+            }
+        },
+        {
+            "command": "toggleFocusMode",
+            "id": "User.toggleFocusMode",
+            "name": "Toggle focus mode (show/hide tabs)"
         }
     ],
     "alwaysOnTop": false,
@@ -55,8 +64,7 @@
     "disableAnimations": false,
     "experimental.enableColorSelection": true,
     "focusFollowMouse": true,
-    "keybindings": 
-    [
+    "keybindings": [
         {
             "id": "User.sendInput.CtrlSpace",
             "keys": "ctrl+space"
@@ -128,18 +136,19 @@
         {
             "id": null,
             "keys": "ctrl+shift+w"
+        },
+        {
+            "keys": "alt+shift+f",
+            "id": "User.toggleFocusMode"
         }
     ],
-    "newTabMenu": 
-    [
+    "newTabMenu": [
         {
             "type": "remainingProfiles"
         }
     ],
-    "profiles": 
-    {
-        "defaults": 
-        {
+    "profiles": {
+        "defaults": {
             "adjustIndistinguishableColors": "never",
             "antialiasingMode": "cleartype",
             "backgroundImage": "C:\\Users\\moise\\Downloads\\Personal\\wallpaperflare.com_wallpaper (9).jpg",
@@ -147,8 +156,7 @@
             "colorScheme": "Dark+",
             "cursorShape": "filledBox",
             "experimental.rainbowSuggestions": true,
-            "font": 
-            {
+            "font": {
                 "face": "JetBrainsMono Nerd Font",
                 "size": 9.5,
                 "weight": "medium"
@@ -160,8 +168,7 @@
             "showMarksOnScrollbar": true,
             "useAcrylic": true
         },
-        "list": 
-        [
+        "list": [
             {
                 "commandline": "%SystemRoot%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
                 "guid": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
@@ -194,8 +201,7 @@
                 "source": "Git"
             },
             {
-                "colorScheme": 
-                {
+                "colorScheme": {
                     "light": "Dark+"
                 },
                 "commandline": "C:\\WINDOWS\\system32\\wsl.exe -d Ubuntu-24.04",
@@ -270,5 +276,6 @@
     "tabWidthMode": "equal",
     "theme": "dark",
     "themes": [],
-    "useAcrylicInTabRow": true
+    "useAcrylicInTabRow": true,
+    "launchMode": "default"
 }
